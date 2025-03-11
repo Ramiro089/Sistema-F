@@ -1,0 +1,357 @@
+\documentclass[12pt, titlepage, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{changepage}
+\usepackage{prftree}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{enumitem} 
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage[spanish]{babel}
+\usepackage{amsthm}
+\usepackage{bussproofs}
+\usepackage{bm}
+\usepackage{url}
+
+\usepackage[edges]{forest}
+\definecolor{folderbg}{RGB}{46, 64, 83}
+\definecolor{folderborder}{RGB}{165, 105, 189}
+\newlength\Size
+\setlength\Size{4pt}
+\tikzset{%
+  folder/.pic={%
+    \filldraw [draw=folderborder, top color=folderbg!50, bottom color=folderbg] (-1.05*\Size,0.2\Size+5pt) rectangle ++(.75*\Size,-0.2\Size-5pt);
+    \filldraw [draw=folderborder, top color=folderbg!50, bottom color=folderbg] (-1.15*\Size,-\Size) rectangle (1.15*\Size,\Size);
+  },
+  file/.pic={%
+    \filldraw [draw=folderborder, top color=folderbg!5, bottom color=folderbg!10] (-\Size,.4*\Size+5pt) coordinate (a) |- (\Size,-1.2*\Size) coordinate (b) -- ++(0,1.6*\Size) coordinate (c) -- ++(-5pt,5pt) coordinate (d) -- cycle (d) |- (c) ;
+  },
+}
+\forestset{%
+  declare autowrapped toks={pic me}{},
+  pic dir tree/.style={%
+    for tree={%
+      folder,
+      font=\ttfamily,
+      grow'=0,
+    },
+    before typesetting nodes={%
+      for tree={%
+        edge label+/.option={pic me},
+      },
+    },
+  },
+  pic me set/.code n args=2{%
+    \forestset{%
+      #1/.style={%
+        inner xsep=2\Size,
+        pic me={pic {#2}},
+      }
+    }
+  },
+  pic me set={directory}{folder},
+  pic me set={file}{file},
+}
+
+\usepackage{listings}
+
+\usepackage{blindtext}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+
+\title{Trabajo Practico Final \\ 
+Análisis del Lenguaje de Programación \\
+Sistema F}
+\author{Ramiro Gatto}
+\date{.../.../2025}
+
+\begin{document}
+\maketitle
+
+\section{Descripción del Proyecto}
+La idea principal del proyecto es la de implementar un EDSL sobre el Sistema F, el cual permita la evaluación de alguno términos del mismo. Para  
+que el proyecto se simple se eligieron un par de tipos bases para el evaluador, los cuales son: 
+\begin{itemize}[label=$\bullet$]
+    \item {Empty}
+    \item {Booleanos}
+    \item {Naturales}
+    \item {Listas (de cualquier tipo)}
+\end{itemize}
+
+\noindent Además, para el evaluador también se definió lo siguiente:
+\begin{itemize}[label=$\bullet$]
+    \item {Chequeador de tipos}
+    \item {Pretty-printer}
+    \item {Parser}
+\end{itemize}
+
+Para poder realizar el evaluador se tomo como base el Trabajo Practico Nº2 \cite{tp2:lambdaCalculoSimpleTipado}, el cual se extendió/modifico 
+para satisfacer con lo requerido.
+
+
+\section{Manual de uso e Instalacion del software}
+Para poder usar el evaluador se va a necesita de Stack \cite{haskellStack}, una vez instalado se tiene que abrir una consola en el directorio Sistema-F y ejecutar:
+\begin{enumerate}
+    \item stack setup (una única vez)
+    \item stack build
+    \item stack exec Sistema-F-exe
+\end{enumerate}
+
+\noindent Con las dos primeras lineas compilamos el proyecto y con la tercera lo ejecutamos.
+
+% Agregar un poco mas
+
+\section{Organización de los archivos}
+\noindent La organización de los archivos del proyecto es la siguiente:
+
+\begin{forest}
+    pic dir tree,
+    where level=0{}{
+      directory,
+    },
+  [Sistema-F
+    [.stack-work]
+    [app
+     [Main.hs, file]
+    ]
+    [dist-newstyle]
+    [src
+     [Common.hs, file]
+     [Parse.y, file]
+     [PrettyPrinter.hs, file]
+     [SystamF.hs, file]
+    ]
+    [test]
+    [.gitignore, file]
+    [CHANGELOG.md, file]
+    [Ejemplos.txt, file]
+    [LICENSE, file]
+    [package.yaml, file]
+    [README.md, file]
+    [Sistema-F.cabal, file]
+    [stack.yaml, file]
+    [stack.yaml.lock, file]
+  ]
+\end{forest}
+
+
+Ahora, expliquemos la función de los archivos en las carpetas app y src que son la principales para el funcionamiento del proyecto, el resto de los 
+archivos son de configuración:
+
+\subsection{app}
+\subsubsection{Main.hs}
+Este archivo es donde comienza la ejecución del programa al compilarse y ejecutarse (implementa el ejecutable final).
+
+\subsection{src}
+\subsubsection{Common.hs}
+En este archivo es donde se encuentran las definición de tipo y de valores. Es decir es donde se definen los términos y valores que se utilizaran.
+
+\subsubsection{Parse.y}
+Para generar el parser utilizaremos happy. En este archivo se generan los parsers a utilizar, los tokens que aceptar el parse, entre mas funciones. También es 
+donde se define el lexer que se utilizara como analizador lexicográfico de la entrada. \\ 
+
+Para crear el archivo se utilizo el parser.y del TPº2 \cite{tp2:lambdaCalculoSimpleTipado} y la documentación de Happy \cite{haskellHappy}.
+
+\subsubsection{PrettyPrinter.hs}
+Para poder mostrar los términos se utilizo la biblioteca pretty printing, la cual consiste en una serie de combinados desarrollada por John Hughes. Aca es 
+donde se encentra implementado el pretty printer para el Sistema F.
+
+\subsubsection{SystamF.hs}
+En este archivo es donde se implementan las funciones del interprete y el chequeador de tipo.
+
+\section{Decisiones de diseño importantes}
+\subsection{Representación del Sistema F}
+\noindent Los tipos, valores y términos en el Sistema F están dados por la siguientes gramática:
+\begin{align*}
+    T &::= E \mid T \rightarrow T \mid X \mid \forall X \ . \ T \mid Bool \mid Nat \mid List \ T \mid ListEmpty\\
+    v &::= True \mid False \mid nv \mid \lambda x:T. \ t \mid \Lambda X \ . \ t \\
+    nv &:: = 0 \mid suc \ nv \\
+    t &::= x \mid \lambda x:T. \ t \mid t \ t \mid ifthenelse \ t \ t \ t \mid \Lambda X \ . \ t \mid t \ \langle X \rangle \\
+\end{align*}
+
+La implementación de estos se encuentra en el archivo \textbf{src/Common.hs} y es la siguiente:
+
+\noindent Para los tipos es:
+\begin{verbatim}
+    data Type = EmptyT 
+              | ListTEmpty
+              | FunT Type Type
+              | BoundForAll Int
+              | VarT String
+              | ForAllT Type
+              | BoolT
+              | NatT
+              | ListT Type
+              deriving (Show, Eq)
+\end{verbatim}
+
+BoundForAll no es un tipo perse (no aparece en la gramática anterior), sino que su función es similar a la idea de 
+los indices de De Brujin. Este indica a que \textbf{para todo} esta ligada la variable cuantificada.
+
+\begin{center}
+    \includegraphics[width=0.7\textwidth]{Imagenes/EjemploBoundForAll.png}
+\end{center}
+
+En un inicio la idea era poner esto con los Term, pero como esta idea esta relacionada con los 
+tipos resulto mas practico agregarlo aca.
+
+Para las expresiones del lambda calculo es:
+\begin{verbatim}
+    data LamTerm  =  LVar String
+                  |  LAbs String Type LamTerm
+                  |  LApp LamTerm LamTerm
+                  |  LTAbs String LamTerm
+                  |  LTApp LamTerm Type
+                  |  LTrue 
+                  |  LFalse
+                  |  LIfThenElse LamTerm LamTerm LamTerm
+                  |  LZero
+                  |  LSuc LamTerm
+                  |  LRec LamTerm LamTerm LamTerm
+                  |  LNil
+                  |  LCons LamTerm LamTerm
+                  |  LRecL LamTerm LamTerm LamTerm
+                  deriving (Show, Eq)
+\end{verbatim}
+
+Al igual que en el Trabajo Practico 2 \cite{tp2:lambdaCalculoSimpleTipado} surge el problema del uso de nombre de variables, al 
+momento de realizar operaciones como la sustitución. Para arreglar esto se mantiene la misma idea de 
+usar la representación con \textbf{indices de De Brujin}. \\
+
+Al usar una representación sin nombre surge el problema de no tener variables libres, entonces 
+para esto usamos la representación localmente sin nombres (donde variables libres y ligadas estan 
+en diferentes categorías sintácticas). \\
+
+\noindent Al utilizar esta representación los términos quedan asi:
+\begin{verbatim}
+    data Term  = Bound Int
+               | Free Name 
+               | Term :@: Term
+               | Lam Type Term
+               | ForAll Term
+               | TApp Term Type
+               | T
+               | F
+               | IfThenElse Term Term Term
+               | Zero
+               | Suc Term
+               | Rec Term Term Term
+               | Nil
+               | Cons Term Term
+               | RecL Term Term Term
+            deriving (Show, Eq)
+\end{verbatim}
+
+\subsubsection{Evaluación}
+Para la evaluación el interprete sigue el orden de reducción \textbf{call-by-value} donde tenemos las siguientes reglas, cuales 
+son las presentes en el TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} y el apunte de clase de Sistema F \cite{ALP:Polimorfismo}:
+
+\begin{displaymath}
+    \prftree[r]{(E-App1)}{t_1 \rightarrow t_1'}{t_1 \ t_2 \rightarrow t_1' \ t_2}  \hspace{1cm}
+    \prftree[r]{(E-App2)}{t_2 \rightarrow t_2'}{v \ t_2 \rightarrow v \ t_2'}  \hspace{1cm}
+    \prftree[r]{(E-AppAbs)}{}{(\lambda x : T_1 \ . \ t_1 ) v \rightarrow t_1[x/v]}
+\end{displaymath}
+
+\begin{displaymath}
+    \prftree[r]{E-IFTrue}{ifthenelse \ T \ t_2 \ t_3}{t_2} \hspace{0.5cm}
+    \prftree[r]{E-IFFalse}{ifthenelse \ F \ t_2 \ t_3}{t_3} \hspace{0.5cm}
+\end{displaymath}
+\begin{displaymath}
+    \prftree[r]{E-IF}{t_1 \rightarrow t_1'}{ifthenelse \ t_1 \ t_2 \ t_3 \rightarrow ifthenelse \ t_1' \ t_2 \ t_3}
+\end{displaymath}
+
+\begin{displaymath}
+    \prftree[r]{E-RZero}{R \ t_1 \ t_2 \ 0 \rightarrow t_1} \hspace{0.5cm}
+    \prftree[r]{E-RSuc}{R \ t_1 \ t_2 (suc \ t) \rightarrow t_2 (R \ t_1 \ t_2 \ t) t} \hspace{0.5cm}
+    \prftree[r]{E-R}{t_3 \rightarrow t_3'}{R \ t_1 \ t_2 \ t_3 \rightarrow R \ t_1 \ t_2 \ t_3'}
+\end{displaymath}
+
+
+\begin{displaymath}
+    \prftree[r]{E-RNil}{RL \ t_1 \ t_2 \ nil \rightarrow t_1} \hspace{0.5cm}
+    \prftree[r]{E-RCons}{RL \ t_1 \ t_2 (cons \ t \ l) \rightarrow t_2 \ t \ l \ (RL \ t_1 \ t_2 \ l)} \hspace{0.5cm}
+\end{displaymath}
+\begin{displaymath}
+    \prftree[r]{E-RL}{t_3 \rightarrow t_3'}{RL \ t_1 \ t_2 \ t_3 \rightarrow RL \ t_1 \ t_2 \ t_3'} \hspace{0.5cm}
+    \prftree[r]{E-Cons1}{t_1 \rightarrow t_1'}{cons \ t_1 \ t_2 \rightarrow cons \ t_1' \ t_2} \hspace{0.5cm}
+    \prftree[r]{E-Cons2}{t_2 \rightarrow t_2'}{cons \ t_1 \ t_2 \rightarrow cons \ t_1 \ t_2'} \hspace{0.5cm}
+\end{displaymath}
+
+\begin{displaymath}
+    \prftree[r]{E-TApp}{t_1 \rightarrow t_1'}{t_1 \ \langle T \rangle \rightarrow t_1' \ \langle T \rangle} \hspace{1cm}
+    \prftree[r]{E-TAppAbs}{(\Lambda X \ . \ t)\ \langle T \rangle \rightarrow t[T/X]}
+\end{displaymath}
+
+\subsubsection{Tipos}
+Para realizar la inferencia de tipo usamos las siguientes reglas, las cuales al igual que en el tema de la evaluación son las
+presentes en el TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} y el apunte de clase de Sistema F \cite{ALP:Polimorfismo}:
+
+\begin{displaymath}
+    \prftree[r]{T-True}{\Gamma \vdash T \ : \ Bool} \hspace{0.5cm}
+    \prftree[r]{T-False}{\Gamma \vdash F \ : \ Bool} \hspace{0.5cm}  
+    \prftree[r]{T-IF}{\Gamma \vdash t_1 : Bool}{\Gamma \vdash t_2 : T}{\Gamma \vdash t_3 : T}{\Gamma \vdash ifthenelse \ t_1 \ t_2 \ t_3 \ : \ T} \hspace{1cm}
+\end{displaymath}
+
+\begin{displaymath}
+    \prftree[r]{T-Zero}{\Gamma \vdash 0 \ : \ Nat} \hspace{1cm}
+    \prftree[r]{T-Suc}{\Gamma \vdash t \ : \ Nat}{\Gamma \vdash suc \ t \ : \ Nat} \hspace{1cm}
+\end{displaymath}
+\begin{displaymath}
+    \prftree[r]{T-Rec}{\Gamma \vdash t_1 : Nat}{\Gamma \vdash t_2 : T \ \rightarrow \ Nat \rightarrow \ T}{\Gamma \vdash t_3 : Nat}{\Gamma \vdash suc \ R \ t_1 \ t_2 \ t_3 \ : \ T} \hspace{1cm}
+\end{displaymath}
+
+\begin{displaymath}
+    \prftree[r]{T-Nil}{\Gamma \vdash 0 \ : \ ListEmpty} \hspace{1cm}
+    \prftree[r]{T-Cons}{\Gamma \vdash t_1 \ : \ T}{\Gamma \vdash t_2 \ : \ List \ T}{\Gamma \vdash cons \ t_1 \ t_2 \ : \ List \ T} \hspace{1cm}
+\end{displaymath}
+\begin{displaymath}
+    \prftree[r]{T-RL}{\Gamma \vdash t_1 : T}{\Gamma \vdash t_2 : T_1 \ \rightarrow \ List \ T_1 \rightarrow \ T \rightarrow \ T}{\Gamma \vdash RL \ t_1 \ t_2 \ t_3 : T}{\Gamma \vdash suc \ R \ t_1 \ t_2 \ t_3 \ : \ T} \hspace{1cm}
+\end{displaymath}
+
+\begin{displaymath}
+    \prftree[r]{T-TAbs}{\Gamma, X \vdash t : T}{\Gamma \vdash \Lambda X \ . \ t : \forall X \ . \ T} \hspace{1cm}
+    \prftree[r]{T-TApp}{\Gamma \vdash t_1 : \forall X \ . \ T}{\Gamma \vdash t_1 \langle T_2 \rangle : T[T_2/X]} \hspace{1cm}
+\end{displaymath}
+
+\subsection{Mostrar terminos}
+Al igual que en el TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} se va a utilizar la biblioteca \textbf{pretty printing}. En el archivo
+\textbf{src/PrettyPrinter.hs} es implementado el \textbf{pretty printing} para el sistema F.
+
+\subsection{Ejmplos con resultados}
+Una vez compilado y ejecutado el programa nos aparecera por consola esto:
+
+\begin{verbatim}
+Intérprete de Sistema F
+Escriba :? para recibir ayuda.
+SF>
+\end{verbatim}
+
+Luego si se quiere ejecutar una expresión del Sistema F, se la ingresa por teclado, se presiona el enter y listo. Veamos ejemplos (estos ejemplos están en el 
+archivo Ejemplos.txt para que puedan ser testeados sin problemas):
+
+\subsubsection{Funcion identidad polimorfica}
+\noindent En el Sistema F se escribiría: $\forall X.\ \lambda $x:X$. \ x$ \\
+En la consola escribimos: /\textbackslash X. \textbackslash x:X . x \\
+Si quisiéramos evaluarla a un natural escribimos: (/\textbackslash X. \textbackslash x:X . x  $<$Nat$>$) (suc 0) \\
+El cual se reduce a: suc 0
+
+\subsubsection{Funcion length para listas polimorfica}
+\noindent En el Sistema F se escribiría: $\forall X.\ \lambda xs:List \ X. \ $RL 0 $(\lambda $x:X$ \ .$ys:List X$ \ .$r:Nat$\ .suc\ r)\ xs$ \\
+En la consola escribimos: (/\textbackslash X. (\textbackslash xs:List X. RL 0 (\textbackslash x:X .\textbackslash ys:List X. \textbackslash r:Nat. suc r) xs)) \\
+Si quisiéramos evaluarla a un lista de lista de naturales escribimos: 
+((/\textbackslash X. (\textbackslash xs:List X. RL 0 (\textbackslash x:X .\textbackslash ys:List X. \textbackslash r:Nat. suc r) xs)) $<$List Nat$>$) 
+(cons (cons 0 nil) nil)\\
+El cual se reduce a: suc 0 \\
+
+\noindent (Si se prueba con nil da como resultado 0)
+
+\subsubsection{Funcion que toma como argumento una funcion polimorfica}
+\noindent En el Sistema F se escribiría: $\forall X.\ \lambda a:A.\ \lambda b:(\forall B. B \rightarrow  B). \ b$ \\
+En la consola escribimos: (/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash /B. B -$>$ B) . b)\\
+Si quisiéramos evaluarla podria ser algo asi: (((((/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash /B. B -$>$ B) . b) $<$Nat$>$) 0) (/ \textbackslash X. \textbackslash x:X. x)) $<$Bool$>$) T\\
+El cual se reduce a: T
+
+
+\bibliographystyle{unsrt}
+\bibliography{lib}
+
+\end{document}

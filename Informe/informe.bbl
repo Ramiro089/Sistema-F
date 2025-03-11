@@ -1,0 +1,23 @@
+\begin{thebibliography}{1}
+
+\bibitem{tp2:lambdaCalculoSimpleTipado}
+Cátedra de~Análisis del Lenguaje~de Programación.
+\newblock Trabajo practico nº2.
+\newblock {\em Departamento de Ciencias de la Computación}, 2024.
+
+\bibitem{haskellStack}
+Mike Pilgrem.
+\newblock Stack documentation, haskell.
+\newblock \url {https://docs.haskellstack.org/en/stable/}.
+
+\bibitem{haskellHappy}
+Andy Gill and Simon Marlow.
+\newblock Happy documentation, haskell.
+\newblock \url {https://haskell-happy.readthedocs.io/en/latest/}.
+
+\bibitem{ALP:Polimorfismo}
+Cátedra de~Análisis del Lenguaje~de Programación.
+\newblock Polimorfismo.
+\newblock {\em Departamento de Ciencias de la Computación}, 2024.
+
+\end{thebibliography}
