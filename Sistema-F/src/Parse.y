@@ -13,51 +13,51 @@ import Data.Char
 %lexer {lexer} {TEOF}
 
 %token
-    '='         { TEquals }
-    ':'         { TColon }
-    '\\'        { TAbs }
-    '.'         { TDot }
-    '('         { TOpen }
-    ')'         { TClose }
-    '->'        { TArrow }
+    '='          { TEquals }
+    ':'          { TColon }
+    '\\'         { TAbs }
+    '.'          { TDot }
+    '('          { TOpen }
+    ')'          { TClose }
+    '->'         { TArrow }
     -- Sistema F
-    '\\/'       { TAnyType }
-    '/\\'       { TForAll }
-    '<'         { TOpenBracket }
-    '>'         { TCloseBracket }
+    '\\/'        { TAnyType }
+    '/\\'        { TForAll }
+    '<'          { TOpenBracket }
+    '>'          { TCloseBracket }
     -- Bool
-    'T'         { TTrue }
-    'F'         { TFalse }
-    'Bool'      { TTypeBool }
+    'T'          { TTrue }
+    'F'          { TFalse }
+    'Bool'       { TTypeBool }
     'ifthenelse' { TIfThenElse }
     -- Nat
-    '0'         { TZero }
-    'suc'       { TSuc }
-    'R'         { TNatRec }
-    'Nat'       { TTypeNat }
+    '0'          { TZero }
+    'suc'        { TSuc }
+    'R'          { TNatRec }
+    'Nat'        { TTypeNat }
     -- List
-    'nil'       { TNil }
-    'cons'      { TCons }
-    'RL'        { TListRec }
-    'List'      { TTypeList $$ }
-    VAR         { TVar $$ }
-    TYPEE       { TTypeE }
-    DEF         { TDef }
-    ANY         { TAny $$ }
+    'nil'        { TNil }
+    'cons'       { TCons }
+    'RL'         { TListRec }
+    'List'       { TTypeList $$ }
+    VAR          { TVar $$ }
+    TYPEE        { TTypeE }
+    DEF          { TDef }
+    ANY          { TAny $$ }
 
 
-%right 'suc' 
-%right 'cons'
-%left 'ifthenelse'
-%left 'R' 
-%left 'RL'
-------------
-%right '\\/' '.'
 %left '<' '>'
+%right '/\\' '.'
 ------------
 %left '=' 
 %right '->'
 %right '\\' '.' 
+------------
+%right 'suc' 
+%right 'cons'
+%left 'ifthenelse'
+%right 'R' 
+%right 'RL'
 
 %%
 
@@ -67,8 +67,8 @@ Def     :  Defexp                      { $1 }
 Defexp  : DEF VAR '=' Exp              { Def $2 $4 } 
 
 Exp     :: { LamTerm }
-        : Exp '<' Type '>'             { LTApp $1 $3 }
-        | '/\\'  ANY '.' Exp           { LTAbs $2 $4 }
+        : '/\\'  ANY '.' Exp           { LTAbs $2 $4 }
+      --| Exp '<' Type '>'             { LTApp $1 $3 } 
         | '\\' VAR ':' X '.' Exp       { LAbs $2 $4 $6 }
         | NAbs                         { $1 }
 
@@ -77,9 +77,10 @@ X       :: { Type }
         | ANY                          { VarT $1 }
 
 NAbs    :: { LamTerm }
-        : NAbs Atom                    { LApp $1 $2 }
+        : Exp '<' Type '>'             { LTApp $1 $3 }          --
+        | NAbs Atom                    { LApp $1 $2 }
         | 'suc' NAbs                   { LSuc $2 }
-        | 'cons' Atom NAbs             { LCons $2 $3 }
+        | 'cons' NAbs NAbs             { LCons $2 $3 }
         | 'ifthenelse' NAbs NAbs NAbs  { LIfThenElse $2 $3 $4 }
         | 'R' NAbs NAbs NAbs           { LRec $2 $3 $4 }
         | 'RL' NAbs NAbs NAbs          { LRecL $2 $3 $4 }
@@ -113,8 +114,8 @@ getLineNo = \s l -> Ok l
 
 thenP :: P a -> (a -> P b) -> P b
 m `thenP` k = \s l-> case m s l of
-                         Ok a     -> k a s l
-                         Failed e -> Failed e
+                       Ok a     -> k a s l
+                       Failed e -> Failed e
                          
 returnP :: a -> P a
 returnP a = \s l-> Ok a
@@ -124,11 +125,12 @@ failP err = \s l -> Failed err
 
 catchP :: P a -> (String -> P a) -> P a
 catchP m k = \s l -> case m s l of
-                        Ok a     -> Ok a
-                        Failed e -> k e s l
+                       Ok a     -> Ok a
+                       Failed e -> k e s l
 
 happyError :: P a
-happyError = \ s i -> Failed $ "Línea "++(show (i::LineNumber))++": Error de parseo\n"++(s)
+happyError = \ s i -> Failed $ "Error de parseo\n"++(s)
+
 
 data Token = TVar String
                | TTypeE
@@ -172,7 +174,6 @@ lexer cont s = case s of
                            | isAlpha c -> lexVar (c:cs)
                     ('\\':('/':cs)) -> cont TAnyType cs
                     ('/':('\\':cs)) -> cont TForAll cs
-                    ('-':('>':cs)) -> cont TArrow cs
                     ('\\':cs)-> cont TAbs cs
                     ('.':cs) -> cont TDot cs
                     ('(':cs) -> cont TOpen cs
@@ -183,7 +184,7 @@ lexer cont s = case s of
                     ('<':cs) -> cont TOpenBracket cs
                     ('>':cs) -> cont TCloseBracket cs
                     ('0':cs) -> cont TZero cs
-                    unknown -> \line -> Failed $ "Línea "++(show line)++": No se reconoce "++(show $ take 10 unknown)++ "..."
+                    unknown -> \line -> Failed $ "No se reconoce "++(show $ take 10 unknown)++ "..."
 
                     where lexVar cs = case span isAlpha cs of
                               ("E",rest)    -> cont TTypeE rest

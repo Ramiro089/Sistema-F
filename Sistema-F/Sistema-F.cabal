@@ -71,26 +71,3 @@ executable Sistema-F-exe
     , mtl
     , pretty >=1.1
   default-language: Haskell2010
-
-test-suite Sistema-F-test
-  type: exitcode-stdio-1.0
-  main-is: Spec.hs
-  other-modules:
-      Paths_Sistema_F
-  autogen-modules:
-      Paths_Sistema_F
-  hs-source-dirs:
-      test
-  ghc-options: -w -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      QuickCheck
-    , Sistema-F
-    , array >=0.5.8.0
-    , base >=4.7 && <5
-    , containers
-    , exceptions
-    , haskeline >=0.8.0.0
-    , hspec
-    , mtl
-    , pretty >=1.1
-  default-language: Haskell2010

@@ -1,13 +1,12 @@
 module Common where
 
--- Comandos interactivos
+-- Comandos. Para evluar evaluar o inicializar un expresion
 data Stmt i = Def String i | Eval i deriving (Show)
   
 instance Functor Stmt where
   fmap f (Def s i) = Def s (f i)
   fmap f (Eval i)  = Eval (f i)
 
--- Tipos de los nombres
 data Name =  Global String deriving (Show, Eq)
 
 -- Entornos
@@ -15,7 +14,6 @@ type NameEnv v t = [(Name, (v, t))]
 
 -- Tipos (T)
 data Type = EmptyT 
-          | ListTEmpty
           | FunT Type Type
           -- Sistema F
           | BoundForAll Int
@@ -24,10 +22,11 @@ data Type = EmptyT
           -- Tipos
           | BoolT
           | NatT
+          | ListTEmpty
           | ListT Type
           deriving (Show, Eq)
   
--- Términos con nombres (t)
+-- Términos con nombres
 data LamTerm  =  LVar String
               |  LAbs String Type LamTerm
               |  LApp LamTerm LamTerm
@@ -48,7 +47,7 @@ data LamTerm  =  LVar String
               |  LRecL LamTerm LamTerm LamTerm
               deriving (Show, Eq)
 
--- Términos localmente sin nombres (t)
+-- Términos localmente sin nombres
 data Term  = Bound Int
            | Free Name 
            | Term :@: Term
@@ -70,7 +69,7 @@ data Term  = Bound Int
            | RecL Term Term Term
         deriving (Show, Eq)
 
--- Valores (v)
+-- Valores
 data Value = VLam Type Term
            --Sistema F
            | VForAll Term

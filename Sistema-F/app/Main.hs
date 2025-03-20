@@ -13,21 +13,18 @@ import           System.IO               hiding ( print )
 import           Text.PrettyPrint.HughesPJ      ( render, text )
 import           Control.Monad.Trans
 import           Control.Monad.IO.Class         ( liftIO )
-import           Control.Monad                  ( foldM )
-import           Control.Monad                  ( when )
-
+import           Control.Monad                  ( foldM, when )
 import           Common
 import           PrettyPrinter
 import           SystemF
 import           Parse
 
+data State = S { ve :: NameEnv Value Type }
 
 main :: IO ()
-main = runInputT defaultSettings main'
-
-main' :: InputT IO ()
-main' = do args <- lift getArgs
-           readevalprint args (S [])
+main = runInputT defaultSettings $ 
+       do args <- lift getArgs
+          readevalprint args (S [])
 
 iname, iprompt :: String
 iname = "Sistema F"
@@ -36,9 +33,7 @@ iprompt = "SF> "
 ioExceptionCatcher :: IOException -> IO (Maybe a)
 ioExceptionCatcher _ = return Nothing
 
-data State = S { ve :: NameEnv Value Type }
-
---  read-eval-print loop
+-- Se encarga de generar el loop de interaccion
 readevalprint :: [String] -> State -> InputT IO ()
 readevalprint args state@(S ve) =
   let rec st = do mx <- MC.catch
@@ -47,10 +42,9 @@ readevalprint args state@(S ve) =
                   case mx of
                     Nothing -> return ()
                     Just "" -> rec st
-                    Just x  -> do
-                      c   <- interpretCommand x
-                      st' <- handleCommand st c
-                      maybe (return ()) rec st'
+                    Just x  -> do c   <- interpretCommand x
+                                  st' <- handleCommand st c
+                                  maybe (return ()) rec st'
   in do lift $ putStrLn ("Intérprete de " ++ iname ++ "\n" ++ "Escriba :help para ver los comandos")
         rec state
 
@@ -62,12 +56,12 @@ data Command = Compile String
              | Noop
              | FindType String
 
+-- Se enacrga de procesar la entrada y verificar que el comando sea valido y no ambiguo
 interpretCommand :: String -> InputT IO Command
 interpretCommand x = lift $ if isPrefixOf ":" x
   then do let (cmd, t') = break isSpace x
           let t         = dropWhile isSpace t'
-
-          let matching = filter (\(Cmd cs _ _ _) -> any (isPrefixOf cmd) cs) commands
+          let matching  = filter (\(Cmd cs _ _ _) -> any (isPrefixOf cmd) cs) commands
           case matching of
             [] -> do putStrLn ("Comando desconocido '" ++ cmd ++ "'. Escriba :help para ver los comandos.")
                      return Noop
@@ -76,6 +70,7 @@ interpretCommand x = lift $ if isPrefixOf ":" x
                     return Noop
   else return (Compile x)
 
+-- En base al comando de entrada selecciona la accion a realizar
 handleCommand :: State -> Command -> InputT IO (Maybe State)
 handleCommand state@(S ve) cmd = 
   case cmd of
@@ -87,8 +82,8 @@ handleCommand state@(S ve) cmd =
       Compile s -> do state' <- compilePhrase state s
                       return (Just state')
       Print s -> let s' = reverse (dropWhile isSpace (reverse (dropWhile isSpace s)))
-                 in  printPhrase s' >> return (Just state)
-      FindType s -> do x' <- parseIO "<interactive>" term_parse s
+                 in printPhrase s' >> return (Just state)
+      FindType s -> do x' <- parseIO term_parse s
                        t  <- case x' of
                                Nothing -> return $ Left "Error en el parsing."
                                Just x  -> return $ infer ve $ conversion $ x
@@ -123,34 +118,33 @@ helpTxt cs =
                               in  ct ++ replicate ((24 - length ct) `max` 2) ' ' ++ d)
            cs)
 
--- Se encarga de parsear un string y manejarlo
+-- Se encarga de parsear un string y procesarlo (en la funcion handleStmt)
 compilePhrase :: State -> String -> InputT IO State
-compilePhrase state x = do x' <- parseIO "<interactive>" stmt_parse x
+compilePhrase state x = do x' <- parseIO stmt_parse x
                            maybe (return state) (handleStmt state) x'
 
--- Se encarga de parsear un string e imprimir
+-- Se encarga de parsear un string, convertirlo e imprimirlo
 printPhrase :: String -> InputT IO ()
-printPhrase x = do x' <- parseIO "<interactive>" stmt_parse x
+printPhrase x = do x' <- parseIO stmt_parse x
                    maybe (return ()) (printStmt . fmap (\y -> (y, conversion y))) x'
 
--- Imprime por pantalla
+-- Imprime por pantalla cuando se usa el comando :print
 printStmt :: Stmt (LamTerm, Term) -> InputT IO ()
 printStmt stmt = lift $ do let outtext = case stmt of
                                  Def x (_, e) -> "def " ++ x ++ " = " ++ render (printTerm e)
-                                 Eval (d, e) ->
-                                   "LamTerm AST:\n"
-                                     ++ show d
-                                     ++ "\n\nTerm AST:\n"
-                                     ++ show e
-                                     ++ "\n\nSe muestra como:\n"
-                                     ++ render (printTerm e)
+                                 Eval (d, e)  -> "LamTerm AST:\n"
+                                                   ++ show d
+                                                   ++ "\n\nTerm AST:\n"
+                                                   ++ show e
+                                                   ++ "\n\nSe muestra como:\n"
+                                                   ++ render (printTerm e)
                            putStrLn outtext
 
 -- Parsea un string
 -- SI no hay problema devuelve el resultado del análisis, caso contrario muestra un error por pantalla 
-parseIO :: String -> (String -> ParseResult a) -> String -> InputT IO (Maybe a)
-parseIO f p x = lift $ case p x of
-                        Failed e -> do putStrLn (f ++ ": " ++ e)
+parseIO :: (String -> ParseResult a) -> String -> InputT IO (Maybe a)
+parseIO p x = lift $ case p x of
+                        Failed e -> do putStrLn e
                                        return Nothing
                         Ok r -> return (Just r)
 
@@ -162,9 +156,8 @@ handleStmt state stmt = lift $ do case stmt of
                                     Eval e  -> checkType "it" (conversion e)
  where
   checkType i t = do case infer (ve state) t of
-                        Left  err -> putStrLn ("Error de tipos: " ++ err) >> return state
-                        Right ty  -> checkEval i t ty
-
+                       Left  err -> putStrLn ("Error de tipos: " ++ err) >> return state
+                       Right ty  -> checkEval i t ty
   checkEval i t ty = do let v = eval (ve state) t
                         _ <- do let outtext = if i == "it" then render (printTerm (quote v)) else render (text i)
                                 putStrLn outtext

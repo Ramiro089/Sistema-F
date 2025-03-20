@@ -1,7 +1,7 @@
-((/\X. \x:X .x) <Nat>) 0
+(/\X. \x:X .x) <Nat> 0
 
 ((/\X. (\xs:List X. RL 0 (\x:X .\ys:List X. \r:Nat. suc r) xs)) <List Nat>) (cons (cons 0 nil) nil) 
 
 ((/\X. (\xs:List X. RL 0 (\x:X .\ys:List X. \r:Nat. suc r) xs)) <\/X. X -> X>) (cons (/\X. \x:X. x) (cons (/\X. \x:X. x) nil)) 
 
-(((((/\A. \a:A. \b:(\/B. B -> B) . b) <Nat>) 0) (/\X. \x:X. x)) <Bool>) T 
+(((((/\A. \a:A. \b:(\/B. B -> B) . b) <Nat>) 0) (/\X. \x:X. x)) <Bool>) T

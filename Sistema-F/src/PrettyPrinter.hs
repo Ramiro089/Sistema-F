@@ -25,20 +25,20 @@ parensIf :: Bool -> Doc -> Doc
 parensIf True  = parens
 parensIf False = id
 
--- pretty-printer de términos
+-- pretty-printer términos
 pp :: Int -> [String] -> Int -> [String] -> Term -> Doc
 pp ii vs ii' vs' (Bound k         ) = text (vs !! (ii - k - 1))
 pp _  _  ii' vs' (Free  (Global s)) = text s
 
 -- Sistema F
 pp ii vs ii' vs' (ForAll term) =
-  text "/\\ "
+  text "/\\"
     <> text (vs' !! ii')
     <> text ". "
     <> pp ii vs (ii' + 1) vs' term
 
 pp ii vs ii' vs' (TApp t typee) =
-  pp ii vs ii' vs' t
+  parens (pp ii vs ii' vs' t)
     <> text " <"
     <> printType typee
     <> text ">"
@@ -110,10 +110,12 @@ isNat _           = False
 isAtom :: Term -> Bool
 isAtom Zero = True
 isAtom Nil  = True
+isAtom T    = True
+isAtom T    = True
 isAtom _    = False
 
 -------------------------------------------------
--- pretty-printer de tipos
+-- pretty-printer tipos
 
 printForAllType :: Int -> Type -> Doc
 printForAllType n (ForAllT typee) = parens $
@@ -124,7 +126,9 @@ printForAllType n (ForAllT typee) = parens $
 printForAllType _ typee = printType typee
 
 printType :: Type -> Doc
-printType EmptyT       = text "E"
+printType EmptyT = text "E"
+
+-- Función
 printType (FunT t1 t2) = sep [parensIf (isFun t1) (printType t1), text "->", printType t2]
 
 -- Sistema F
@@ -138,17 +142,22 @@ printType BoolT = text "Bool"
 printType NatT = text "Nat"
 
 -- List
-printType (ListT t) = text "List " <> parensIf (inList t) (printType t)
+printType (ListT t)    = text "List " <> parensIf (inList t) (printType t)
+printType (ListTEmpty) = text "Lista Vacia"
 
 isFun :: Type -> Bool
 isFun (FunT _ _) = True
 isFun _          = False
 
+isList :: Type -> Bool
+isList (ListT _) = True
+isList _         = False
+
 inList :: Type -> Bool
-inList (ListT _) = True
-inList (FunT _ _) = True
+inList (ListT _)   = True
+inList (FunT _ _)  = True
 inList (ForAllT _) = True
-inList _         = False
+inList _           = False
 
 fv :: Term -> [String]
 fv (Bound _         ) = []
@@ -177,6 +186,6 @@ fv Nil          = []
 fv (Cons t u)   = fv t ++ fv u
 fv (RecL t u v) = fv t ++ fv u ++ fv v
 
----
+-------------------------------------------------
 printTerm :: Term -> Doc
 printTerm t = pp 0 (filter (\v -> v `notElem` fv t) vars) 0 cuantificadores t
