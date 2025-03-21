@@ -3,7 +3,7 @@ where
 
 import           Data.List
 import           Data.Maybe
-import           Prelude                 hiding ( (>>=), (>>) )
+import           Prelude
 import           Text.PrettyPrint.HughesPJ      ( render )
 import           PrettyPrinter
 import           Common
@@ -34,7 +34,7 @@ toTerm f (LRecL t1 t2 t3) _ = RecL (f t1) (f t2) (f t3)
 
 toTerm f t _ = error $ "No se puede convertir el lambda termino " ++ show t ++ " a un termino"
 
--- conversion a Term
+-- Conversion a Term
 conversion :: LamTerm -> Term
 conversion = conversion' [] []
 
@@ -55,11 +55,16 @@ conversionType (ForAllT t1) cuan = ForAllT (conversionType t1 cuan)
 conversionType t cuan = t
 
 elemIndex' :: String -> [String] -> Int
-elemIndex' n c = fromMaybe 0 (elemIndex n c)
+elemIndex' n c = fromMaybe 0 (lastElemIndex n c)
+
+lastElemIndex :: Eq a => a -> [a] -> Maybe Int
+lastElemIndex x xs = case elemIndices x xs of
+                       [] -> Nothing
+                       is -> Just (last is)
 
 ---------------------------------
 
--- Sustituye una variable por un término en otro (la idea es hacer lo que estipula la regla E-TAppAbs)
+-- Sustituye una variable por un término en otro
 sub :: Int -> Term -> Term -> Term
 sub i t (Bound j) | i == j    = t
                   | otherwise = Bound j
@@ -95,14 +100,17 @@ sub i t (RecL u v w) = let u' = sub i t u
                            w' = sub i t w
                        in RecL u' v' w'
 
--- Sustituye una variable de tipo por un tipo en concreto
+-- Sustituye una variable de tipo por un tipo en concreto (la idea es hacer lo que estipula la regla E-TAppAbs)
 sus :: Term -> Type -> Term
 sus (Lam t u) typee       = Lam (susType t typee) (sus u typee)
 sus (t1 :@: t2) typee     = sus t1 typee :@: sus t2 typee
+
 sus (ForAll t) typee      = ForAll (sus t typee)
 sus (TApp t typee') typee = TApp (sus t typee) typee'
-sus (RecL u v w) typee    = RecL (sus u typee) (sus v typee) (sus w typee)
-sus (Rec u v w) typee     = Rec u (sus v typee) w
+
+sus (Rec t u v) typee     = Rec t (sus u typee) v
+sus (RecL t u v) typee    = RecL (sus t typee) (sus u typee) (sus v typee)
+
 sus t _                   = t
 
 -- Sustitución de tipos en tipos
@@ -140,14 +148,15 @@ eval nvs (t1 :@: t2) = let (VLam _ t1') = eval nvs t1
                        in eval nvs $ sub 0 (quote t2') t1'
 
 -- Sistema F
-eval nvs (ForAll t) = VForAll t
-eval nvs (TApp (ForAll t) typee) = eval nvs (sus t typee) 
-eval nvs (TApp (Free n) typee)   = eval nvs (TApp (quote $ fst $ fromJust $ lookup n nvs) typee)
-eval nvs (TApp t typee)          = let t' = eval nvs t
-                                   in case t' of
-                                        VForAll _ -> eval nvs (TApp (quote t') typee)
-                                        _         -> error $ "El termino dentro de la aplicación " ++ show t' ++ " no evalúa a un VForAll"
+eval nvs (ForAll t)     = VForAll t
+eval nvs (TApp t typee) = let t' = eval nvs t
+                          in case t' of
+                               VForAll u ->  eval nvs (sus u typee)
+                               _         -> error $ "El termino dentro de la aplicación " ++ show t' ++ " no evalúa a un VForAll"
 
+
+--eval nvs (TApp (ForAll t) typee) = eval nvs (sus t typee) 
+--eval nvs (TApp (Free n) typee)   = eval nvs (TApp (quote $ fst $ fromJust $ lookup n nvs) typee)
 --eval nvs (TApp t typee)          = let t' = eval nvs t
 --                                   in eval nvs (TApp (quote t') typee)
 
@@ -199,14 +208,11 @@ ret = Right
 err :: String -> Either String Type
 err = Left
 
-(>>=) :: Either String Type -> (Type -> Either String Type) -> Either String Type
-(>>=) v f = either Left f v
-
 -- Imprime que el Type no es funcion
 notfunError :: Type -> Either String Type
 notfunError t1 = err $ render (printType t1) ++ " no puede ser aplicado."
 
--- Imprime que la variable no esta defnida
+-- Imprime que la variable no esta definida
 notfoundError :: Name -> Either String Type
 notfoundError n = err $ show n ++ " no está definida."
 
@@ -214,33 +220,30 @@ notfoundError n = err $ show n ++ " no está definida."
 matchError :: Type -> Type -> Either String Type
 matchError t1 t2 = err $ "se esperaba " ++ render (printType t1) ++ ", pero " ++ render (printType t2) ++ " fue inferido."
 
--- Recibe un Type y un error o Type, si es el error lo devuleve, Si no se fija que los Type coincidan
+-- Recibe un Type y un error o Type, si es el error lo devuelve, si no se fija que los Type coincidan
 match :: Type -> Either String Type -> Either String Type
 match expected_type e@(Left _) = e
 match expected_type e@(Right t) | expected_type == t = e
-                                | (isList expected_type) && t == (ListTEmpty) = e
+                                | (isList expected_type) && t == (ListTEmpty) = Right expected_type
                                 | otherwise = matchError expected_type t
   where
     isList (ListT _) = True
     isList _         = False
 
--- Chequea que el Type sea una funcion
+-- Chequea que el Type sea una función
 checkIsFun :: Either String Type -> Either String Type
 checkIsFun e@(Left _)  = e
 checkIsFun e@(Right t) = case t of
                            FunT t1 t2 -> e
                            _ -> notfunError t
 
--- Chequea que el Type sea una funcion usada en la recursion de lista
+-- Chequea que el Type sea una función usada en la recursion de lista
 checkIsFunInRL :: Either String Type -> Either String Type
 checkIsFunInRL e@(Left _)  = e
 checkIsFunInRL e@(Right t) = case t of
                                FunT u (FunT (ListT u') (FunT (ListT v) (ListT v'))) -> 
                                           if u == u' && v == v' then e else err "El tipo de la función en RL esta mal"
                                _ -> err "No es el tipo esperados para la operación RL"
-
-(>>) :: Either String Type -> Either String Type -> Either String Type
-(>>) v f = v >>= const f
 
 -- Dado un tupla y un Type, se fija que la primer componente coincida con el Type
 -- De hacerlo devuelve la segunda componente, sino devuelve un error.
@@ -260,7 +263,6 @@ infer' c e (Lam t u) = infer' (t : c) e u >>= \tu -> ret $ FunT t tu
 -- Sistema F
 infer' c e (ForAll t)              = infer' c e t >>= \t' -> ret $ ForAllT t'
 infer' c e (TApp (ForAll t) typee) = infer' c e (sus t typee)
-infer' c e (TApp (Free n) typee)   = infer' c e (TApp (quote $ fst $ fromJust $ (lookup n e)) typee)
 infer' c e (TApp t typee)          = infer' c e t >>= \t' ->
                                               case t' of
                                                 ForAllT u -> ret $ susType u typee

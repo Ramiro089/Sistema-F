@@ -25,7 +25,9 @@ parensIf :: Bool -> Doc -> Doc
 parensIf True  = parens
 parensIf False = id
 
+-------------------------------------------------
 -- pretty-printer términos
+
 pp :: Int -> [String] -> Int -> [String] -> Term -> Doc
 pp ii vs ii' vs' (Bound k         ) = text (vs !! (ii - k - 1))
 pp _  _  ii' vs' (Free  (Global s)) = text s
@@ -63,8 +65,8 @@ pp ii vs ii' vs' (Lam t c) =
     <> text ". "
     <> pp (ii + 1) vs ii' vs' c
   
-pp ii vs ii' vs' t | isBool t = printBool ii vs ii' vs' t
-                   | isNat t = printNat ii vs ii' vs' t
+pp ii vs ii' vs' t | isBool t  = printBool ii vs ii' vs' t
+                   | isNat t   = printNat ii vs ii' vs' t
                    | otherwise = printList ii vs ii' vs' t
 
 
@@ -125,6 +127,7 @@ printForAllType n (ForAllT typee) = parens $
     <> printForAllType (n + 1) typee
 printForAllType _ typee = printType typee
 
+-- Empty
 printType :: Type -> Doc
 printType EmptyT = text "E"
 
@@ -149,10 +152,6 @@ isFun :: Type -> Bool
 isFun (FunT _ _) = True
 isFun _          = False
 
-isList :: Type -> Bool
-isList (ListT _) = True
-isList _         = False
-
 inList :: Type -> Bool
 inList (ListT _)   = True
 inList (FunT _ _)  = True
@@ -172,9 +171,7 @@ fv (TApp t typee) = fv t
 -- Bool
 fv T = []
 fv F = []
-fv (IfThenElse T t u) = fv t
-fv (IfThenElse F t u) = fv u
-fv (IfThenElse t _ _) = fv t
+fv (IfThenElse t u v) = fv t ++ fv u ++ fv v
 
 -- Nat
 fv Zero        = []

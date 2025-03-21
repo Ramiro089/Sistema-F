@@ -1,18 +1,19 @@
 module Common where
 
--- Comandos. Para evluar evaluar o inicializar un expresion
+-- Comandos. Para evaluar evaluar o inicializar un expresión
 data Stmt i = Def String i | Eval i deriving (Show)
   
 instance Functor Stmt where
   fmap f (Def s i) = Def s (f i)
   fmap f (Eval i)  = Eval (f i)
 
+-- Nombres
 data Name =  Global String deriving (Show, Eq)
 
 -- Entornos
 type NameEnv v t = [(Name, (v, t))]
 
--- Tipos (T)
+-- Tipos
 data Type = EmptyT 
           | FunT Type Type
           -- Sistema F
