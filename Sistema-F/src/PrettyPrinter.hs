@@ -29,11 +29,21 @@ parensIf False = id
 -- pretty-printer términos
 
 pp :: Int -> [String] -> Int -> [String] -> Term -> Doc
-pp ii vs ii' vs' (Bound k         ) = text (vs !! (ii - k - 1))
-pp _  _  ii' vs' (Free  (Global s)) = text s
+pp ii vs ii' vs' (Bound k)         = text (vs !! (ii - k - 1))
+pp _  _  ii' vs' (Free (Global s)) = text s
+pp ii vs ii' vs' (i :@: c) = 
+  sep [parensIf (isLam i) (pp ii vs ii' vs' i), nest 1 (parensIf (isLam c || isApp c) (pp ii vs ii' vs' c))]
+
+pp ii vs ii' vs' (Lam t c) =
+  text "\\"
+    <> text (vs !! ii)
+    <> text ":"
+    <> printType t
+    <> text ". "
+    <> pp (ii + 1) vs ii' vs' c
 
 -- Sistema F
-pp ii vs ii' vs' (ForAll term) =
+pp ii vs ii' vs' (ForAll term) = 
   text "/\\"
     <> text (vs' !! ii')
     <> text ". "
@@ -44,26 +54,6 @@ pp ii vs ii' vs' (TApp t typee) =
     <> text " <"
     <> printType typee
     <> text ">"
-
--- Bool
-pp ii vs ii' vs' (IfThenElse t1 t2 t3) =
-  text "if "
-    <> pp ii vs ii' vs' t1
-    <> text " then "
-    <> pp ii vs ii' vs' t2
-    <> text " else "
-    <> pp ii vs ii' vs' t3
-
-pp ii vs ii' vs' (i :@: c) = sep
-  [parensIf (isLam i) (pp ii vs ii' vs' i), nest 1 (parensIf (isLam c || isApp c) (pp ii vs ii' vs' c))]
-
-pp ii vs ii' vs' (Lam t c) =
-  text "\\"
-    <> text (vs !! ii)
-    <> text ":"
-    <> printType t
-    <> text ". "
-    <> pp (ii + 1) vs ii' vs' c
   
 pp ii vs ii' vs' t | isBool t  = printBool ii vs ii' vs' t
                    | isNat t   = printNat ii vs ii' vs' t
@@ -73,9 +63,16 @@ pp ii vs ii' vs' t | isBool t  = printBool ii vs ii' vs' t
 applyParen :: Int -> [String] -> Int -> [String] -> Term -> Doc
 applyParen ii vs ii' vs' t = parensIf (not $ isAtom t) (pp ii vs ii' vs' t)
 
-printBool :: Int -> [String] -> Int -> [String] ->  Term -> Doc
+printBool :: Int -> [String] -> Int -> [String] -> Term -> Doc
 printBool ii vs ii' vs' T = text "true" 
 printBool ii vs ii' vs' F = text "false"
+printBool ii vs ii' vs' (IfThenElse t1 t2 t3) =
+  text "if "
+    <> pp ii vs ii' vs' t1
+    <> text " then "
+    <> pp ii vs ii' vs' t2
+    <> text " else "
+    <> pp ii vs ii' vs' t3
 
 printNat :: Int -> [String] -> Int -> [String] -> Term -> Doc
 printNat ii vs ii' vs' Zero            = text "0"
@@ -99,9 +96,10 @@ isApp (_ :@: _) = True
 isApp _         = False
 
 isBool :: Term -> Bool
-isBool T = True
-isBool F = True
-isBool _ = False
+isBool T                  = True
+isBool F                  = True
+isBool (IfThenElse _ _ _) = True
+isBool _                  = False
 
 isNat :: Term -> Bool
 isNat Zero        = True
@@ -113,7 +111,7 @@ isAtom :: Term -> Bool
 isAtom Zero = True
 isAtom Nil  = True
 isAtom T    = True
-isAtom T    = True
+isAtom F    = True
 isAtom _    = False
 
 -------------------------------------------------
@@ -159,18 +157,18 @@ inList (ForAllT _) = True
 inList _           = False
 
 fv :: Term -> [String]
-fv (Bound _         ) = []
-fv (Free  (Global n)) = [n]
-fv (t   :@: u       ) = fv t ++ fv u
-fv (Lam _   u       ) = fv u
+fv (Bound _)         = []
+fv (Free (Global n)) = [n]
+fv (t :@: u)         = fv t ++ fv u
+fv (Lam _ u)         = fv u
 
 -- Sistema F
-fv (ForAll t)     = fv t
-fv (TApp t typee) = fv t 
+fv (ForAll t) = fv t
+fv (TApp t _) = fv t 
 
 -- Bool
-fv T = []
-fv F = []
+fv T                  = []
+fv F                  = []
 fv (IfThenElse t u v) = fv t ++ fv u ++ fv v
 
 -- Nat

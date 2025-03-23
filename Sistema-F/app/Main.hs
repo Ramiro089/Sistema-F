@@ -7,7 +7,7 @@ import           Data.List
 import           Data.Maybe
 import           Prelude                 hiding ( print )
 import           System.Console.Haskeline
-import qualified Control.Monad.Catch           as MC
+import qualified Control.Monad.Catch     as MC
 import           System.Environment
 import           System.IO               hiding ( print )
 import           Text.PrettyPrint.HughesPJ      ( render, text )
@@ -21,33 +21,6 @@ import           Parse
 
 data State = S { ve :: NameEnv Value Type }
 
-main :: IO ()
-main = runInputT defaultSettings $ 
-       do args <- lift getArgs
-          readevalprint args (S [])
-
-iname, iprompt :: String
-iname = "Sistema F"
-iprompt = "SF> "
-
-ioExceptionCatcher :: IOException -> IO (Maybe a)
-ioExceptionCatcher _ = return Nothing
-
--- Se encarga de generar el loop de interaccion
-readevalprint :: [String] -> State -> InputT IO ()
-readevalprint args state@(S ve) =
-  let rec st = do mx <- MC.catch
-                    (getInputLine iprompt)
-                    (lift . ioExceptionCatcher)
-                  case mx of
-                    Nothing -> return ()
-                    Just "" -> rec st
-                    Just x  -> do c   <- interpretCommand x
-                                  st' <- handleCommand st c
-                                  maybe (return ()) rec st'
-  in do lift $ putStrLn ("Intérprete de " ++ iname ++ "\n" ++ "Escriba :help para ver los comandos")
-        rec state
-
 data Command = Compile String
              | Print String
              | Browse
@@ -56,7 +29,32 @@ data Command = Compile String
              | Noop
              | FindType String
 
--- Se enacrga de procesar la entrada y verificar que el comando sea valido y no ambiguo
+data InteractiveCommand = Cmd [String] String (String -> Command) String
+
+main :: IO ()
+main = runInputT defaultSettings $ 
+       do args <- lift getArgs
+          readevalprint args (S [])
+
+ioExceptionCatcher :: IOException -> IO (Maybe a)
+ioExceptionCatcher _ = return Nothing
+
+-- Se encarga de generar el loop de interacción
+readevalprint :: [String] -> State -> InputT IO ()
+readevalprint args state@(S ve) =
+  let rec st = do mx <- MC.catch
+                    (getInputLine "SF> ")
+                    (lift . ioExceptionCatcher)
+                  case mx of
+                    Nothing -> return ()
+                    Just "" -> rec st
+                    Just x  -> do c   <- interpretCommand x
+                                  st' <- handleCommand st c
+                                  maybe (return ()) rec st'
+  in do lift $ putStrLn ("Intérprete de " ++ "Sistema F" ++ "\n" ++ "Escriba :help para ver los comandos")
+        rec state
+
+-- Se encarga de procesar la entrada y verificar que el comando sea valido y no ambiguo
 interpretCommand :: String -> InputT IO Command
 interpretCommand x = lift $ if isPrefixOf ":" x
   then do let (cmd, t') = break isSpace x
@@ -70,7 +68,7 @@ interpretCommand x = lift $ if isPrefixOf ":" x
                     return Noop
   else return (Compile x)
 
--- En base al comando de entrada selecciona la accion a realizar
+-- En base al comando de entrada selecciona la acción a realizar
 handleCommand :: State -> Command -> InputT IO (Maybe State)
 handleCommand state@(S ve) cmd = 
   case cmd of
@@ -91,8 +89,6 @@ handleCommand state@(S ve) cmd =
                          Left  err -> lift (putStrLn ("Error de tipos: " ++ err)) >> return ()
                          Right t'  -> lift $ putStrLn $ render $ printType t'
                        return (Just state)
-
-data InteractiveCommand = Cmd [String] String (String -> Command) String
 
 commands :: [InteractiveCommand]
 commands =
@@ -153,12 +149,12 @@ parseIO p x = lift $ case p x of
 handleStmt :: State -> Stmt LamTerm -> InputT IO State
 handleStmt state stmt = lift $ do case stmt of
                                     Def x e -> checkType x (conversion e)
-                                    Eval e  -> checkType "it" (conversion e)
+                                    Eval e  -> checkType "LastInput" (conversion e)
  where
   checkType i t = do case infer (ve state) t of
                        Left  err -> putStrLn ("Error de tipos: " ++ err) >> return state
                        Right ty  -> checkEval i t ty
   checkEval i t ty = do let v = eval (ve state) t
-                        _ <- do let outtext = if i == "it" then render (printTerm (quote v)) else render (text i)
+                        _ <- do let outtext = if i == "LastInput" then render (printTerm (quote v)) else render (text i)
                                 putStrLn outtext
                         return (state { ve = (Global i, (v, ty)) : ve state })

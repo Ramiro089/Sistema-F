@@ -142,7 +142,7 @@ el funcionamiento del mismo, el resto de los archivos son de configuración.
 \subsection{app}
 \subsubsection{Main.hs}
 Este archivo es donde comienza la ejecución del programa al compilarse y ejecutarse (implementa el ejecutable final). Hace uso de una 
-serie de funciones para poder parser la entrada por teclado, determinar el comando ingresado, imprimir por pantalla, realizar la evaluación, entre muchas cosas mas.
+serie de funciones para poder parser la entrada por teclado, determinar el comando ingresado, imprimir por pantalla, realizar la evaluación, entre muchas cosas más.
 
 \subsection{src}
 \subsubsection{Common.hs}
@@ -150,7 +150,7 @@ En este archivo es donde se encuentran las definición de los tipo y valores. Es
 
 \subsubsection{Parse.y}
 Para generar el parser utilizaremos happy. En este archivo se generan los parsers a utilizar, se definen los tokens que acepta el parse, 
-entre mas funciones. También es donde se define el lexer que se utilizara como analizador lexicográfico de la entrada. \\ 
+entre más funciones. También es donde se define el lexer que se utilizara como analizador lexicográfico de la entrada. \\ 
 
 Para crear el archivo se utilizo el Parser.y del TPº2 \cite{tp2:lambdaCalculoSimpleTipado} y la documentación de Happy \cite{haskellHappy}.
 
@@ -159,12 +159,12 @@ Para poder mostrar los términos se utilizo la biblioteca pretty printing, la cu
 donde se encuentra implementado el pretty printer para el Sistema F. \\
 Aca podemos distinguir 2 función importantes:
 \begin{itemize}[label=$\bullet$]
-  \item {pp: la cual dado un LamTerm lo imprime por pantalla.}
+  \item {pp: la cual dado un Term lo imprime por pantalla.}
   \item {printType: la cual se encarga de imprimir por pantalla los Type}
 \end{itemize}
 
 \subsubsection{SystamF.hs}
-En este archivo es donde se implementan las funciones de evaluación y el chequeador de tipo (ademas de unas cuantas funciones auxiliares).
+En este archivo es donde se implementan las funciones de evaluación y el chequeador de tipo (además de unas cuantas funciones auxiliares).
 
 \section{Decisiones de diseño importantes}
 \subsection{Representación del Sistema F}
@@ -192,7 +192,7 @@ Como se menciono anteriormente, la implementación de estos se encuentra en el a
               deriving (Show, Eq)
 \end{verbatim}
 
-De este definición podemos ver que hay mas elementos en Type que en la gramática de tipos, esto se debe a que se agregaron 2 tipos mas
+De este definición podemos ver que hay más elementos en Type que en la gramática de tipos, esto se debe a que se agregaron 2 tipos más
 los cuales son BoundForAll y ListEmpty. \\
 
 Como se van a poder usar listas de todo tipo surge un problema a la hora de usar una lista vacía, ya que se debería especificar el tipo, 
@@ -200,19 +200,19 @@ a pesar de estar vacía.
 Para evitar y simplificar esto lo que decidió fue darle un tipo especial a la lista vacía \textbf{ListTEmpty}, de esta forma se evita 
 tener que darle un tipo especifico.
 
-Pero esto trajo problemas, por ejemplo en la función infer' en el caso de RL o en la funcion match en el caso de compara el tipo de una lista vacía con un tipo que es 
+Pero esto trajo problemas, por ejemplo en la función infer' en el caso de RL o en la función match en el caso de compara el tipo de una lista vacía con un tipo que es 
 una lista pero no vacía. Para solucionar este inconveniente lo que se hizo fue separar en casos, uno es cuando la lista es 
 vacía y el otro cuando no es una lista vacía.\\
 
 En el caso del BoundForAll, este no es un tipo per se, sino que su función es similar a la idea 
-de los indices de De Brujin. Este seria, coloquialmente hablando, indicar a que \textbf{para todo} esta ligada la variable cuantificada , la idea es la siguiente:
+de los indices de De Brujin. Esto seria, coloquialmente hablando, indicar a que \textbf{para todo} esta ligada la variable cuantificada, la idea es la siguiente:
 
 \begin{center}
     \includegraphics[width=0.7\textwidth]{Imagenes/EjemploBoundForAll.png}
 \end{center}
 
 En un inicio la idea era poner el BoundForAll con los Term (como el Bound que esta en Term), pero como esta idea esta relacionada con 
-los tipos resulto mas practico agregarlo aca.
+los tipos resulto más practico agregarlo aca.
 
 \noindent Para las expresiones del lambda calculo se tiene:
 \begin{verbatim}
@@ -315,16 +315,16 @@ presentes en el TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} y en el material de
 \end{displaymath}
 
 \begin{displaymath}
-    \prftree[r]{T-Zero}{\Gamma \vdash 0 \ : \ Nat} \hspace{1cm}
-    \prftree[r]{T-Suc}{\Gamma \vdash t \ : \ Nat}{\Gamma \vdash suc \ t \ : \ Nat} \hspace{1cm}
+    \prftree[r]{T-Zero}{\Gamma \vdash 0 : Nat} \hspace{1cm}
+    \prftree[r]{T-Suc}{\Gamma \vdash t : Nat}{\Gamma \vdash suc \ t : Nat} \hspace{1cm}
 \end{displaymath}
 \begin{displaymath}
-    \prftree[r]{T-Rec}{\Gamma \vdash t_1 : Nat}{\Gamma \vdash t_2 : T \ \rightarrow \ Nat \rightarrow \ T}{\Gamma \vdash t_3 : Nat}{\Gamma \vdash suc \ R \ t_1 \ t_2 \ t_3 \ : \ T} \hspace{1cm}
+    \prftree[r]{T-Rec}{\Gamma \vdash t_1 : Nat}{\Gamma \vdash t_2 : T \ \rightarrow \ Nat \rightarrow \ T}{\Gamma \vdash t_3 : Nat}{\Gamma \vdash suc \ R \ t_1 \ t_2 \ t_3 : T} \hspace{1cm}
 \end{displaymath}
 
 \begin{displaymath}
-    \prftree[r]{T-Nil}{\Gamma \vdash nil \ : \ ListEmpty} \hspace{1cm}
-    \prftree[r]{T-Cons}{\Gamma \vdash t_1 \ : \ T}{\Gamma \vdash t_2 \ : \ List \ T}{\Gamma \vdash cons \ t_1 \ t_2 \ : \ List \ T} \hspace{1cm}
+    \prftree[r]{T-Nil}{\Gamma \vdash nil : ListEmpty} \hspace{1cm}
+    \prftree[r]{T-Cons}{\Gamma \vdash t_1 : T}{\Gamma \vdash t_2 : List \ T}{\Gamma \vdash cons \ t_1 \ t_2 :  List \ T} \hspace{1cm}
 \end{displaymath}
 \begin{displaymath}
     \prftree[r]{T-RL}{\Gamma \vdash t_1 : T}{\Gamma \vdash t_2 : T_1 \ \rightarrow \ List \ T_1 \rightarrow \ T \rightarrow \ T}{\Gamma \vdash t_3 : List \ T_1}{\Gamma \vdash \ RL \ t_1 \ t_2 \ t_3 \ : \ T} \hspace{1cm}
@@ -350,7 +350,7 @@ SF>
 \end{verbatim}
 
 Luego si se quiere evaluar una expresión del Sistema F, se la ingresa por teclado, se presiona el enter y listo 
-(también hay mas opciones como el print para mostrar los ASTs y el type para ver el tipo de la expresión, entre muchas otras). \\
+(también hay más opciones como el :print para mostrar los ASTs y el :type para ver el tipo de la expresión, entre muchas otras). \\
 
 Veamos ejemplos (estos ejemplos están en el archivo Ejemplos.txt para que puedan ser testeados sin problemas por el lector):
 

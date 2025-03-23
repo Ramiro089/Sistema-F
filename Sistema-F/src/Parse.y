@@ -106,109 +106,102 @@ Type    : TYPEE                        { EmptyT }
 {
 data ParseResult a = Ok a | Failed String deriving Show         
 
-type LineNumber = Int
-type P a = String -> LineNumber -> ParseResult a
-
-getLineNo :: P LineNumber
-getLineNo = \s l -> Ok l
+type P a = String -> ParseResult a
 
 thenP :: P a -> (a -> P b) -> P b
-m `thenP` k = \s l-> case m s l of
-                       Ok a     -> k a s l
-                       Failed e -> Failed e
+m `thenP` k = \s -> case m s  of
+                      Ok a     -> k a s 
+                      Failed e -> Failed e
                          
 returnP :: a -> P a
-returnP a = \s l-> Ok a
+returnP a = \s -> Ok a
 
 failP :: String -> P a
-failP err = \s l -> Failed err
+failP err = \s -> Failed err
 
 catchP :: P a -> (String -> P a) -> P a
-catchP m k = \s l -> case m s l of
-                       Ok a     -> Ok a
-                       Failed e -> k e s l
+catchP m k = \s  -> case m s  of
+                      Ok a     -> Ok a
+                      Failed e -> k e s
 
 happyError :: P a
-happyError = \ s i -> Failed $ "Error de parseo\n"++(s)
-
+happyError = \s -> Failed $ "Error de parseo\n"++(s)
 
 data Token = TVar String
-               | TTypeE
-               | TDef
-               | TAbs
-               | TDot
-               | TOpen
-               | TClose 
-               | TColon
-               | TArrow
-               | TEquals
-               | TEOF
-               -- Sistema F
-               | TForAll
-               | TAnyType
-               | TOpenBracket
-               | TCloseBracket
-               | TAny String
-               -- Bool
-               | TTrue
-               | TFalse
-               | TTypeBool
-               | TIfThenElse
-               -- Nat
-               | TZero
-               | TSuc
-               | TNatRec
-               | TTypeNat
-               -- List
-               | TNil
-               | TCons
-               | TListRec
-               | TTypeList Token
-               deriving Show
+           | TTypeE
+           | TDef
+           | TAbs
+           | TDot
+           | TOpen
+           | TClose 
+           | TColon
+           | TArrow
+           | TEquals
+           | TEOF
+           -- Sistema F
+           | TForAll
+           | TAnyType
+           | TOpenBracket
+           | TCloseBracket
+           | TAny String
+           -- Bool
+           | TTrue
+           | TFalse
+           | TTypeBool
+           | TIfThenElse
+           -- Nat
+           | TZero
+           | TSuc
+           | TNatRec
+           | TTypeNat
+           -- List
+           | TNil
+           | TCons
+           | TListRec
+           | TTypeList Token
+           deriving Show
 
 ----------------------------------
 lexer cont s = case s of
-                    [] -> cont TEOF []
-                    ('\n':s)  ->  \line -> lexer cont s (line + 1)
-                    (c:cs) | isSpace c -> lexer cont cs
-                           | isAlpha c -> lexVar (c:cs)
-                    ('\\':('/':cs)) -> cont TAnyType cs
-                    ('/':('\\':cs)) -> cont TForAll cs
-                    ('\\':cs)-> cont TAbs cs
-                    ('.':cs) -> cont TDot cs
-                    ('(':cs) -> cont TOpen cs
-                    ('-':('>':cs)) -> cont TArrow cs
-                    (')':cs) -> cont TClose cs
-                    (':':cs) -> cont TColon cs
-                    ('=':cs) -> cont TEquals cs
-                    ('<':cs) -> cont TOpenBracket cs
-                    ('>':cs) -> cont TCloseBracket cs
-                    ('0':cs) -> cont TZero cs
-                    unknown -> \line -> Failed $ "No se reconoce "++(show $ take 10 unknown)++ "..."
+                 [] -> cont TEOF []
+                 (c:cs) | isSpace c -> lexer cont cs
+                        | isAlpha c -> lexVar (c:cs)
+                 ('\\':('/':cs)) -> cont TAnyType cs
+                 ('/':('\\':cs)) -> cont TForAll cs
+                 ('\\':cs)-> cont TAbs cs
+                 ('.':cs) -> cont TDot cs
+                 ('(':cs) -> cont TOpen cs
+                 ('-':('>':cs)) -> cont TArrow cs
+                 (')':cs) -> cont TClose cs
+                 (':':cs) -> cont TColon cs
+                 ('=':cs) -> cont TEquals cs
+                 ('<':cs) -> cont TOpenBracket cs
+                 ('>':cs) -> cont TCloseBracket cs
+                 ('0':cs) -> cont TZero cs
+                 unknown -> Failed $ "No se reconoce "++(show $ take 10 unknown)++ "..."
 
-                    where lexVar cs = case span isAlpha cs of
-                              ("E",rest)    -> cont TTypeE rest
-                              ("def",rest)  -> cont TDef rest
-                              -- Bool
-                              ("ifthenelse", rest) -> cont TIfThenElse rest
-                              ("T", rest) -> cont TTrue rest
-                              ("F", rest) -> cont TFalse rest
-                              ("Bool", rest) -> cont TTypeBool rest
-                              -- Nat
-                              ("suc", rest) -> cont TSuc rest
-                              ("R", rest) -> cont TNatRec rest
-                              ("Nat", rest) -> cont TTypeNat rest
-                              -- List
-                              ("nil", rest) -> cont TNil rest
-                              ("cons", rest) -> cont TCons rest
-                              ("RL", rest) -> cont TListRec rest
-                              ("List", rest) -> let (_, rest') = span isSpace rest
-                                                    (typeName, rest'') = span isAlpha rest'
-                                                in cont (TTypeList (TAny typeName)) rest'
-                                          
-                              (var, rest) | all isUpper var -> cont (TAny var) rest
-                                          | otherwise       -> cont (TVar var) rest    
+                 where lexVar cs = case span isAlpha cs of
+                        ("E",rest)    -> cont TTypeE rest
+                        ("def",rest)  -> cont TDef rest
+                        -- Bool
+                        ("ifthenelse", rest) -> cont TIfThenElse rest
+                        ("T", rest) -> cont TTrue rest
+                        ("F", rest) -> cont TFalse rest
+                        ("Bool", rest) -> cont TTypeBool rest
+                        -- Nat
+                        ("suc", rest) -> cont TSuc rest
+                        ("R", rest) -> cont TNatRec rest
+                        ("Nat", rest) -> cont TTypeNat rest
+                        -- List
+                        ("nil", rest) -> cont TNil rest
+                        ("cons", rest) -> cont TCons rest
+                        ("RL", rest) -> cont TListRec rest
+                        ("List", rest) -> let (_, rest') = span isSpace rest
+                                              (typeName, rest'') = span isAlpha rest'
+                                          in cont (TTypeList (TAny typeName)) rest'
+                        (var, rest) | all isUpper var -> cont (TAny var) rest
+                                    | otherwise       -> cont (TVar var) rest    
                                            
-stmt_parse s = parseStmt s 1
-term_parse s = term s 1
+stmt_parse s = parseStmt s
+term_parse s = term s
 }

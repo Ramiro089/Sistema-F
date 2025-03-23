@@ -28,7 +28,7 @@ toTerm f (LSuc t) _        = Suc $ f t
 toTerm f (LRec t1 t2 t3) _ = Rec (f t1) (f t2) (f t3)
 
 -- List
-toTerm f LNil _ = Nil
+toTerm f LNil _             = Nil
 toTerm f (LCons t1 t2) _    = Cons (f t1) (f t2)
 toTerm f (LRecL t1 t2 t3) _ = RecL (f t1) (f t2) (f t3)
 
@@ -53,6 +53,16 @@ conversionType (FunT t1 t2) cuan = FunT (conversionType t1 cuan) (conversionType
 conversionType (ListT t1) cuan   = ListT (conversionType t1 cuan)
 conversionType (ForAllT t1) cuan = ForAllT (conversionType t1 cuan)
 conversionType t cuan = t
+
+{-
+El problema que surge con las variables cuantificadas es que se puede escribir algo de este tipo:
+/\X. \x:X. /\X: \y:X. t
+Que baja nuestra definición de Sistema F, los dos /\X. son distintos, entonces para da el correcto BoundForAll tenemos que buscar 
+la ultima ocurrencia de 'X' en la lista de los cuantificadores (cuant). Por eso a diferencia de var, busco la ultima ocurrencia.
+Pero si se escribiese:
+/\X. \x:X. /\Y: \y:Y. t
+No se tendría el problema anterior por ser claramente distintos los /\X y /\Y
+-}
 
 elemIndex' :: String -> [String] -> Int
 elemIndex' n c = fromMaybe 0 (lastElemIndex n c)

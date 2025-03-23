@@ -54,5 +54,5 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - Sistema-F
-    build-tools:
+    build-tool-depends:
     - happy

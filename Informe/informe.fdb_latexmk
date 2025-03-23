@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex informe"] 1742332457.65387 "informe.aux" "informe.bbl" "informe" 1742468545.51293 0
+["bibtex informe"] 1742332457.65387 "informe.aux" "informe.bbl" "informe" 1742574722.36739 0
   "./lib.bib" 1741546831 775 f73df07953324a31068c4da1c2170849 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/bibtex/bst/bibtex/unsrt.bst" 1291864736 18030 1376b4b231b50c66211e47e42eda2875 ""
-  "informe.aux" 1742468544 3350 ee9b65b6209d62c23bfbb82555cf3ce9 "pdflatex"
+  "informe.aux" 1742574721 3350 ee9b65b6209d62c23bfbb82555cf3ce9 "pdflatex"
   (generated)
   "informe.bbl"
   "informe.blg"
   (rewritten before read)
-["pdflatex"] 1742468541.6872 "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" "informe.pdf" "informe" 1742468545.51367 0
+["pdflatex"] 1742574719.56617 "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" "informe.pdf" "informe" 1742574722.36807 0
   "C:/Users/Ramiro/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1741540145 121421 986c656c18d5dae14116b93751df729f ""
   "C:/Users/Ramiro/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk" 1725994593 14064 1546adc216da8020c017a4a700ee9bf2 ""
   "C:/Users/Ramiro/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1725973176 24265805 ba274860b5af4f8fb0372ed395b15e4e ""
@@ -218,11 +218,11 @@
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/wrapfig/wrapfig.sty" 1044403200 26220 3701aebf80ccdef248c0c20dd062fea9 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1700127522 55487 80a65caedd3722f4c20a14a69e785d8f ""
   "Imagenes/EjemploBoundForAll.png" 1741730696 91789 a6dd11c62d7cf117f2194e501ddb7103 ""
-  "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" 1742468540 16842 0ca0882828cf5847127ad5c0428d2cba ""
-  "informe.aux" 1742468544 3350 ee9b65b6209d62c23bfbb82555cf3ce9 "pdflatex"
+  "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" 1742574718 16817 ffd94addebe61396675f18a8f5af2c9e ""
+  "informe.aux" 1742574721 3350 ee9b65b6209d62c23bfbb82555cf3ce9 "pdflatex"
   "informe.bbl" 1742332458 734 a5e57bb9c9a8d18bc13ce54afb325406 "bibtex informe"
-  "informe.out" 1742468544 3164 481e25d99de37e20909a060aa3e842fc "pdflatex"
-  "informe.tex" 1742468540 16842 0ca0882828cf5847127ad5c0428d2cba ""
+  "informe.out" 1742574721 3164 481e25d99de37e20909a060aa3e842fc "pdflatex"
+  "informe.tex" 1742574718 16817 ffd94addebe61396675f18a8f5af2c9e ""
   (generated)
   "informe.aux"
   "informe.log"
