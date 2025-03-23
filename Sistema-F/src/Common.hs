@@ -8,7 +8,7 @@ instance Functor Stmt where
   fmap f (Eval i)  = Eval (f i)
 
 -- Nombres
-data Name =  Global String deriving (Show, Eq)
+newtype Name =  Global String deriving (Show, Eq)
 
 -- Entornos
 type NameEnv v t = [(Name, (v, t))]

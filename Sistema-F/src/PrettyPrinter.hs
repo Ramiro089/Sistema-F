@@ -144,7 +144,7 @@ printType NatT = text "Nat"
 
 -- List
 printType (ListT t)    = text "List " <> parensIf (inList t) (printType t)
-printType (ListTEmpty) = text "Lista Vacia"
+printType ListTEmpty = text "Lista Vacia"
 
 isFun :: Type -> Bool
 isFun (FunT _ _) = True

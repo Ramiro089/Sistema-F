@@ -63,7 +63,7 @@
 Análisis del Lenguaje de Programación \\
 Sistema F}
 \author{Ramiro Gatto}
-\date{.../.../2025}
+\date{.../03/2025}
 
 \begin{document}
 \maketitle
@@ -81,9 +81,9 @@ que el proyecto sea simple se eligieron un par de tipos bases para el evaluador,
 
 \noindent Además, para el evaluador también se definió lo siguiente:
 \begin{itemize}[label=$\bullet$]
-    \item {Chequeador de tipos}
-    \item {Pretty-printer}
-    \item {Parser}
+    \item {Chequeador de tipos.}
+    \item {Pretty-printer.}
+    \item {Parser.}
 \end{itemize}
 
 Para poder realizar el mismo se tomo como inspiración el Trabajo Practico Nº2 \cite{tp2:lambdaCalculoSimpleTipado}, el cual se 
@@ -116,7 +116,6 @@ directorio del proyecto (Sistema-F) y ejecutar:
     [app
      [Main.hs, file]
     ]
-    [dist-newstyle]
     [src
      [Common.hs, file]
      [Parse.y, file]
@@ -134,7 +133,6 @@ directorio del proyecto (Sistema-F) y ejecutar:
     [stack.yaml.lock, file]
   ]
 \end{forest}
-
 
 Para entender el como funciona el proyecto veamos la función de los archivos en las carpetas app y src que son los principales para 
 el funcionamiento del mismo, el resto de los archivos son de configuración.
@@ -160,15 +158,16 @@ donde se encuentra implementado el pretty printer para el Sistema F. \\
 Aca podemos distinguir 2 función importantes:
 \begin{itemize}[label=$\bullet$]
   \item {pp: la cual dado un Term lo imprime por pantalla.}
-  \item {printType: la cual se encarga de imprimir por pantalla los Type}
+  \item {printType: la cual se encarga de imprimir por pantalla los Type.}
 \end{itemize}
 
 \subsubsection{SystamF.hs}
-En este archivo es donde se implementan las funciones de evaluación y el chequeador de tipo (además de unas cuantas funciones auxiliares).
+En este archivo es donde se implementan las funciones de evaluación y el chequeador de tipo (además de unas cuantas funciones auxiliares 
+para el correcto funcionamiento).
 
 \section{Decisiones de diseño importantes}
 \subsection{Representación del Sistema F}
-\noindent Los tipos, valores y términos en el Sistema F están dados por la siguientes gramática:
+Los tipos, valores y términos en el Sistema F están dados por la siguientes gramática, respectivamente:
 \begin{align*}
     T &::= E \mid T \rightarrow T \mid X \mid \forall X \ . \ T \mid Bool \mid Nat \mid List \ T\\
     v &::= True \mid False \mid nv \mid \lambda x:T. \ t \mid \Lambda X \ . \ t \\
@@ -197,7 +196,7 @@ los cuales son BoundForAll y ListEmpty. \\
 
 Como se van a poder usar listas de todo tipo surge un problema a la hora de usar una lista vacía, ya que se debería especificar el tipo, 
 a pesar de estar vacía. 
-Para evitar y simplificar esto lo que decidió fue darle un tipo especial a la lista vacía \textbf{ListTEmpty}, de esta forma se evita 
+Para evitar y simplificar esto lo que decidió fue darle un tipo especial a la lista vacía, \textbf{ListTEmpty}, de esta forma se evita 
 tener que darle un tipo especifico.
 
 Pero esto trajo problemas, por ejemplo en la función infer' en el caso de RL o en la función match en el caso de compara el tipo de una lista vacía con un tipo que es 
@@ -319,7 +318,7 @@ presentes en el TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} y en el material de
     \prftree[r]{T-Suc}{\Gamma \vdash t : Nat}{\Gamma \vdash suc \ t : Nat} \hspace{1cm}
 \end{displaymath}
 \begin{displaymath}
-    \prftree[r]{T-Rec}{\Gamma \vdash t_1 : Nat}{\Gamma \vdash t_2 : T \ \rightarrow \ Nat \rightarrow \ T}{\Gamma \vdash t_3 : Nat}{\Gamma \vdash suc \ R \ t_1 \ t_2 \ t_3 : T} \hspace{1cm}
+    \prftree[r]{T-Rec}{\Gamma \vdash t_1 : Nat}{\Gamma \vdash t_2 : T \ \rightarrow \ Nat \rightarrow \ T}{\Gamma \vdash t_3 : Nat}{\Gamma \vdash R \ t_1 \ t_2 \ t_3 : T} \hspace{1cm}
 \end{displaymath}
 
 \begin{displaymath}
@@ -348,6 +347,7 @@ Intérprete de Sistema F
 Escriba :help para recibir ayuda.
 SF>
 \end{verbatim}
+
 
 Luego si se quiere evaluar una expresión del Sistema F, se la ingresa por teclado, se presiona el enter y listo 
 (también hay más opciones como el :print para mostrar los ASTs y el :type para ver el tipo de la expresión, entre muchas otras). \\

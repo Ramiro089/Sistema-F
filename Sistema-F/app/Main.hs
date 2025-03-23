@@ -19,7 +19,7 @@ import           PrettyPrinter
 import           SystemF
 import           Parse
 
-data State = S { ve :: NameEnv Value Type }
+newtype State = S { ve :: NameEnv Value Type }
 
 data Command = Compile String
              | Print String
