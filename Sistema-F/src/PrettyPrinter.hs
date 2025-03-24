@@ -5,7 +5,7 @@ import  Common
 import  Text.PrettyPrint.HughesPJ
 import  Prelude hiding ((<>))
 
--- lista de posibles nombres para variables
+-- Lista de posibles nombres para variables
 vars :: [String]
 vars =
   [ c : n
@@ -13,7 +13,7 @@ vars =
   , c <- ['x', 'y', 'z'] ++ ['a' .. 'w']
   ]
 
--- lista de posibles cuantificadores
+-- Lista de posibles cuantificadores
 cuantificadores :: [String]
 cuantificadores = 
   [ c : n
@@ -29,7 +29,7 @@ parensIf False = id
 -- pretty-printer términos
 
 pp :: Int -> [String] -> Int -> [String] -> Term -> Doc
-pp ii vs ii' vs' (Bound k)         = text (vs !! (ii - k - 1))
+pp ii vs _ _ (Bound k)             = text (vs !! (ii - k - 1))
 pp _  _  ii' vs' (Free (Global s)) = text s
 pp ii vs ii' vs' (i :@: c) = 
   sep [parensIf (isLam i) (pp ii vs ii' vs' i), nest 1 (parensIf (isLam c || isApp c) (pp ii vs ii' vs' c))]
@@ -42,7 +42,6 @@ pp ii vs ii' vs' (Lam t c) =
     <> text ". "
     <> pp (ii + 1) vs ii' vs' c
 
--- Sistema F
 pp ii vs ii' vs' (ForAll term) = 
   text "/\\"
     <> text (vs' !! ii')
@@ -104,7 +103,7 @@ isBool _                  = False
 isNat :: Term -> Bool
 isNat Zero        = True
 isNat (Suc _)     = True
-isNat (Rec _ _ v) = True
+isNat (Rec _ _ _) = True
 isNat _           = False
 
 isAtom :: Term -> Bool

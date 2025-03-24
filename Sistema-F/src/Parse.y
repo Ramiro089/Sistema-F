@@ -10,7 +10,7 @@ import Data.Char
 %name term Exp
 
 %tokentype { Token }
-%lexer {lexer} {TEOF}
+%lexer { lexer } { TEOF }
 
 %token
     '='          { TEquals }
@@ -29,7 +29,9 @@ import Data.Char
     'T'          { TTrue }
     'F'          { TFalse }
     'Bool'       { TTypeBool }
-    'ifthenelse' { TIfThenElse }
+    'if'         { TIf }
+    'then'       { TThen }
+    'else'       { TElse }
     -- Nat
     '0'          { TZero }
     'suc'        { TSuc }
@@ -39,7 +41,7 @@ import Data.Char
     'nil'        { TNil }
     'cons'       { TCons }
     'RL'         { TListRec }
-    'List'       { TTypeList $$ }
+    'List'       { TTypeList }
     VAR          { TVar $$ }
     TYPEE        { TTypeE }
     DEF          { TDef }
@@ -77,11 +79,11 @@ X       :: { Type }
         | ANY                          { VarT $1 }
 
 NAbs    :: { LamTerm }
-        : Exp '<' Type '>'             { LTApp $1 $3 }          --
+        : Exp '<' Type '>'             { LTApp $1 $3 }
         | NAbs Atom                    { LApp $1 $2 }
         | 'suc' NAbs                   { LSuc $2 }
         | 'cons' NAbs NAbs             { LCons $2 $3 }
-        | 'ifthenelse' NAbs NAbs NAbs  { LIfThenElse $2 $3 $4 }
+        | 'if' NAbs 'then' NAbs 'else' NAbs  { LIfThenElse $2 $4 $6 }
         | 'R' NAbs NAbs NAbs           { LRec $2 $3 $4 }
         | 'RL' NAbs NAbs NAbs          { LRecL $2 $3 $4 }
         | Atom                         { $1 }
@@ -120,9 +122,9 @@ failP :: String -> P a
 failP err = \s -> Failed err
 
 catchP :: P a -> (String -> P a) -> P a
-catchP m k = \s  -> case m s  of
-                      Ok a     -> Ok a
-                      Failed e -> k e s
+catchP m k = \s -> case m s  of
+                     Ok a     -> Ok a
+                     Failed e -> k e s
 
 happyError :: P a
 happyError = \s -> Failed $ "Error de parseo\n"++(s)
@@ -148,7 +150,9 @@ data Token = TVar String
            | TTrue
            | TFalse
            | TTypeBool
-           | TIfThenElse
+           | TIf
+           | TThen
+           | TElse
            -- Nat
            | TZero
            | TSuc
@@ -158,7 +162,7 @@ data Token = TVar String
            | TNil
            | TCons
            | TListRec
-           | TTypeList Token
+           | TTypeList
            deriving Show
 
 ----------------------------------
@@ -180,11 +184,13 @@ lexer cont s = case s of
                  ('0':cs) -> cont TZero cs
                  unknown -> Failed $ "No se reconoce "++(show $ take 10 unknown)++ "..."
 
-                 where lexVar cs = case span isAlpha cs of
+    where lexVar cs = case span isAlpha cs of
                         ("E",rest)    -> cont TTypeE rest
                         ("def",rest)  -> cont TDef rest
                         -- Bool
-                        ("ifthenelse", rest) -> cont TIfThenElse rest
+                        ("if", rest) -> cont TIf rest
+                        ("then", rest) -> cont TThen rest
+                        ("else", rest) -> cont TElse rest
                         ("T", rest) -> cont TTrue rest
                         ("F", rest) -> cont TFalse rest
                         ("Bool", rest) -> cont TTypeBool rest
@@ -196,12 +202,7 @@ lexer cont s = case s of
                         ("nil", rest) -> cont TNil rest
                         ("cons", rest) -> cont TCons rest
                         ("RL", rest) -> cont TListRec rest
-                        ("List", rest) -> let (_, rest') = span isSpace rest
-                                              (typeName, rest'') = span isAlpha rest'
-                                          in cont (TTypeList (TAny typeName)) rest'
+                        ("List", rest) -> cont TTypeList rest
                         (var, rest) | all isUpper var -> cont (TAny var) rest
-                                    | otherwise       -> cont (TVar var) rest    
-                                           
-stmt_parse s = parseStmt s
-term_parse s = term s
+                                    | otherwise       -> cont (TVar var) rest
 }

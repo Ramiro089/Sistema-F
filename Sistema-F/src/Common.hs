@@ -16,11 +16,9 @@ type NameEnv v t = [(Name, (v, t))]
 -- Tipos
 data Type = EmptyT 
           | FunT Type Type
-          -- Sistema F
           | BoundForAll Int
           | VarT String
           | ForAllT Type
-          -- Tipos
           | BoolT
           | NatT
           | ListTEmpty
@@ -68,7 +66,7 @@ data Term  = Bound Int
            | Nil
            | Cons Term Term
            | RecL Term Term Term
-        deriving (Show, Eq)
+           deriving (Show, Eq)
 
 -- Valores
 data Value = VLam Type Term
@@ -80,9 +78,9 @@ data Value = VLam Type Term
            | VNum NumVal
            -- List
            | VList (ListVal Value)
-         deriving (Show, Eq)
+           deriving (Show, Eq)
 
--- Valores Numericos
+-- Valores Numéricos
 data NumVal = NZero | NSuc NumVal deriving (Show, Eq)
 
 -- Valores Booleanos

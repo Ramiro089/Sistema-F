@@ -134,7 +134,7 @@ directorio del proyecto (Sistema-F) y ejecutar:
   ]
 \end{forest}
 
-Para entender el como funciona el proyecto veamos la función de los archivos en las carpetas app y src que son los principales para 
+Para entender como funciona el proyecto veamos la función de los archivos en las carpetas app y src que son los principales para 
 el funcionamiento del mismo, el resto de los archivos son de configuración.
 
 \subsection{app}
@@ -151,6 +151,8 @@ Para generar el parser utilizaremos happy. En este archivo se generan los parser
 entre más funciones. También es donde se define el lexer que se utilizara como analizador lexicográfico de la entrada. \\ 
 
 Para crear el archivo se utilizo el Parser.y del TPº2 \cite{tp2:lambdaCalculoSimpleTipado} y la documentación de Happy \cite{haskellHappy}.
+Se tiene 2 parses, uno es el parseStmt en donde el no terminal de nivel superior (top-level non-terminal) es \textbf{Def} y el 
+segundo en donde el top-level non-terminal es \textbf{Exp}. \\
 
 \subsubsection{PrettyPrinter.hs}
 Para poder mostrar los términos se utilizo la biblioteca pretty printing, la cual consiste en una serie de combinados desarrollada por John Hughes. Aca es 
@@ -257,12 +259,12 @@ en diferentes categorías sintácticas). \\
                | Nil
                | Cons Term Term
                | RecL Term Term Term
-            deriving (Show, Eq)
+               deriving (Show, Eq)
 \end{verbatim}
 
 \subsubsection{Evaluación}
 Para la evaluación el interprete sigue el orden de reducción \textbf{call-by-value} en donde tenemos las siguientes reglas, las cuales 
-son las presentes en el TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} y el material de clase del Sistema F \cite{ALP:Polimorfismo}:
+son las presentes en el TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} y en el material de clase del Sistema F \cite{ALP:Polimorfismo}:
 
 \begin{displaymath}
     \prftree[r]{(E-App1)}{t_1 \rightarrow t_1'}{t_1 \ t_2 \rightarrow t_1' \ t_2}  \hspace{1cm}
@@ -352,6 +354,11 @@ SF>
 Luego si se quiere evaluar una expresión del Sistema F, se la ingresa por teclado, se presiona el enter y listo 
 (también hay más opciones como el :print para mostrar los ASTs y el :type para ver el tipo de la expresión, entre muchas otras). \\
 
+Una cosa a mencionar en el tema de los Bool es que si bien en la gramática el if aparece como \textbf{ifthenelse $t_1$ $t_2$ $t_3$} y 
+tanto en los LamTerm como en los Term también aparece asi, a la hora de escribirlo y mostrarlo por consola es 
+\textbf{if $t_1$ then $t_2$ else $t_3$}, este cambio se hizo por comodidad, es más común escribirlo como la segunda forma que como 
+la primera.\\
+
 Veamos ejemplos (estos ejemplos están en el archivo Ejemplos.txt para que puedan ser testeados sin problemas por el lector):
 
 \subsubsection{Funcion identidad polimorfica}
@@ -373,7 +380,7 @@ El cual se reduce a: suc suc 0 \\
 \subsubsection{Funcion que toma como argumento una funcion polimorfica}
 \noindent En el Sistema F se escribiría: $\Lambda A.\ \lambda a:A.\ \lambda b:(\forall B. B \rightarrow  B). \ b$ \\
 En la consola escribimos: (/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash /B. B -$>$ B) . b)\\
-Si quisiéramos evaluarla podria ser algo asi: (((((/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash /B. B -$>$ B) . b) $<$Nat$>$) 0) (/ \textbackslash X. \textbackslash x:X. x)) $<$Bool$>$) T\\
+Si quisiéramos evaluarla podría ser algo asi: (((((/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash /B. B -$>$ B) . b) $<$Nat$>$) 0) (/ \textbackslash X. \textbackslash x:X. x)) $<$Bool$>$) T\\
 El cual se reduce a: T
 
 

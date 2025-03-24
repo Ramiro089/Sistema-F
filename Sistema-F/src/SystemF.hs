@@ -1,10 +1,11 @@
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 module SystemF ( conversion, eval, infer, quote )
 where
 
-import           Data.List
-import           Data.Maybe
+import           Data.List                  ( elemIndex, elemIndices )
+import           Data.Maybe                 ( fromJust, fromMaybe, maybe )
 import           Prelude
-import           Text.PrettyPrint.HughesPJ      ( render )
+import           Text.PrettyPrint.HughesPJ  ( render )
 import           PrettyPrinter
 import           Common
 
@@ -50,25 +51,26 @@ conversion' vars cuan t                           = toTerm (conversion' vars cua
 conversionType :: Type -> [String] -> Type
 conversionType (VarT typee) cuan = BoundForAll (elemIndex' typee cuan)
 conversionType (FunT t1 t2) cuan = FunT (conversionType t1 cuan) (conversionType t2 cuan)
-conversionType (ListT t1) cuan   = ListT (conversionType t1 cuan)
+conversionType (ListT t1)   cuan = ListT (conversionType t1 cuan)
 conversionType (ForAllT t1) cuan = ForAllT (conversionType t1 cuan)
-conversionType t cuan = t
+conversionType t cuan            = t
 
 elemIndex' :: String -> [String] -> Int
 elemIndex' n c = fromMaybe 0 (lastElemIndex n c)
 
 {-
-Antes elemIndex' esa:
+Antes elemIndex' era:
 elemIndex' n c = fromMaybe 0 (elemIndex n c)
 
-El problema que surge es que como el Sistema F es polimorfismo paramétrico, en este los 'para todos' pueden ocurrir en cualquier lugar, 
+El problema que surge es que como el Sistema F es un polimorfismo paramétrico, los 'para todos' pueden ocurrir en cualquier lugar, 
 entonces se se puede escribir algo de este tipo:
 /\X. \x:X. /\X. \y:X. t
+
 Que baja nuestra definición de Sistema F, los dos '/\X.' son distintos, entonces para dar el correcto BoundForAll tenemos que buscar 
 la ultima ocurrencia de 'X' en la lista de los cuantificadores (cuant). Por eso a diferencia de var, busco la ultima ocurrencia.
 Pero si se escribiese:
 /\X. \x:X. /\Y. \y:Y. t
-No se tendría el problema anterior por ser claramente distintos los /\X y /\Y
+No se tendría el problema anterior por ser claramente distintos los '/\X.' y '/\Y.'
 -}
 
 lastElemIndex :: Eq a => a -> [a] -> Maybe Int
@@ -155,7 +157,7 @@ quote (VList (VCons x xs)) = Cons (quote x) (quote (VList xs))
 
 -- Evalúa un término en un entorno dado
 eval :: NameEnv Value Type -> Term -> Value
-eval nvs (Free n)    = fst $ fromJust $ lookup n nvs
+eval nvs (Free n)    = fst $ fromJust (lookup n nvs)
 eval nvs (Lam t u)   = VLam t u
 eval nvs (t1 :@: t2) = let (VLam _ t1') = eval nvs t1
                            t2' = eval nvs t2
@@ -232,7 +234,7 @@ matchError t1 t2 = err $ "se esperaba " ++ render (printType t1) ++ ", pero " ++
 match :: Type -> Either String Type -> Either String Type
 match expected_type e@(Left _) = e
 match expected_type e@(Right t) | expected_type == t = e
-                                | (isList expected_type) && t == (ListTEmpty) = Right expected_type
+                                | isList expected_type && t == ListTEmpty = Right expected_type
                                 | otherwise = matchError expected_type t
   where
     isList (ListT _) = True

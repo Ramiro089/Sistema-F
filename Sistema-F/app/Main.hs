@@ -3,7 +3,7 @@ module Main where
 import           Control.Exception              ( catch, IOException )
 import           Control.Monad.Except
 import           Data.Char
-import           Data.List
+import           Data.List                      ( isPrefixOf, intercalate, nub )
 import           Data.Maybe
 import           Prelude                 hiding ( print )
 import           System.Console.Haskeline
@@ -32,7 +32,7 @@ data Command = Compile String
 data InteractiveCommand = Cmd [String] String (String -> Command) String
 
 main :: IO ()
-main = runInputT defaultSettings $ 
+main = runInputT defaultSettings $
        do args <- lift getArgs
           readevalprint args (S [])
 
@@ -51,7 +51,7 @@ readevalprint args state@(S ve) =
                     Just x  -> do c   <- interpretCommand x
                                   st' <- handleCommand st c
                                   maybe (return ()) rec st'
-  in do lift $ putStrLn ("Intérprete de " ++ "Sistema F" ++ "\n" ++ "Escriba :help para ver los comandos")
+  in do lift $ putStrLn ("Intérprete de Sistema F" ++ "\n" ++ "Escriba :help para ver los comandos")
         rec state
 
 -- Se encarga de procesar la entrada y verificar que el comando sea valido y no ambiguo
@@ -64,64 +64,61 @@ interpretCommand x = lift $ if isPrefixOf ":" x
             [] -> do putStrLn ("Comando desconocido '" ++ cmd ++ "'. Escriba :help para ver los comandos.")
                      return Noop
             [Cmd _ _ f _] -> do return (f t)
-            _ -> do putStrLn ("Comando ambigüo, podría ser " ++ concat (intersperse ", " [ head cs | Cmd cs _ _ _ <- matching ]) ++ ".")
+            _ -> do putStrLn ("Comando ambigüo, podría ser " ++ intercalate ", " ([ head cs | Cmd cs _ _ _ <- matching ]) ++ ".")
                     return Noop
   else return (Compile x)
 
 -- En base al comando de entrada selecciona la acción a realizar
 handleCommand :: State -> Command -> InputT IO (Maybe State)
-handleCommand state@(S ve) cmd = 
+handleCommand state@(S ve) cmd =
   case cmd of
-      Quit   -> lift $ return Nothing
-      Noop   -> return (Just state)
-      Help   -> lift $ putStr (helpTxt commands) >> return (Just state)
-      Browse -> lift $ do putStr (unlines [ s | Global s <- reverse (nub (map fst ve)) ])
-                          return (Just state)
-      Compile s -> do state' <- compilePhrase state s
-                      return (Just state')
-      Print s -> let s' = reverse (dropWhile isSpace (reverse (dropWhile isSpace s)))
-                 in printPhrase s' >> return (Just state)
-      FindType s -> do x' <- parseIO term_parse s
+      Quit       -> lift $ return Nothing
+      Noop       -> return (Just state)
+      Help       -> lift $ putStr (helpTxt commands) >> return (Just state)
+      Browse     -> lift $ do putStr (unlines [ s | Global s <- reverse (nub (map fst ve)) ])
+                              return (Just state)
+      Compile s  -> do state' <- compilePhrase state s
+                       return (Just state')
+      Print s    -> let s' = reverse (dropWhile isSpace (reverse (dropWhile isSpace s)))
+                    in printPhrase s' >> return (Just state)
+      FindType s -> do x' <- parseIO term s
                        t  <- case x' of
                                Nothing -> return $ Left "Error en el parsing."
-                               Just x  -> return $ infer ve $ conversion $ x
+                               Just x  -> return $ infer ve $ conversion x
                        case t of
                          Left  err -> lift (putStrLn ("Error de tipos: " ++ err)) >> return ()
                          Right t'  -> lift $ putStrLn $ render $ printType t'
                        return (Just state)
 
 commands :: [InteractiveCommand]
-commands =
-  [ Cmd [":browse"] ""       (const Browse) "Ver los nombres en scope"
-  , Cmd [":print"]  "<exp>"  Print          "Imprime un término y sus ASTs"
-  , Cmd [":quit"]   ""       (const Quit)   "Salir del intérprete"
-  , Cmd [":help"]   ""       (const Help)   "Muestra una lista de comandos"
-  , Cmd [":type"]   "<term>" (FindType)     "Inferir el tipo del término"
-  ]
+commands = [Cmd [":browse"] ""       (const Browse) "Ver los nombres en scope", 
+            Cmd [":print"]  "<exp>"  Print          "Imprime un término y sus ASTs", 
+            Cmd [":quit"]   ""       (const Quit)   "Salir del intérprete", 
+            Cmd [":help"]   ""       (const Help)   "Muestra una lista de comandos", 
+            Cmd [":type"]   "<term>" FindType       "Inferir el tipo del término"]
 
 helpTxt :: [InteractiveCommand] -> String
-helpTxt cs =
-  "--------------------------------------------------\n" 
+helpTxt cs = "--------------------------------------------------\n"
     ++ "·····················COMANDOS·····················\n"
     ++ "--------------------------------------------------\n"
     ++ "Los comando se pueden abreviar como :c donde\n"
-    ++ "c es el primer caracter del nombre completo.\n\n"
+    ++ "c es el primer carácter del nombre completo.\n\n"
     ++ "<expr>                  Evaluar expresión\n"
     ++ "def <var> = <expr>      Definir una variable\n"
     ++ unlines
          (map
-           (\(Cmd c a _ d) -> let ct = concat(intersperse ", " (map (++ if null a then "" else " " ++ a) c))
+           (\(Cmd c a _ d) -> let ct = intercalate ", " (map (++ if null a then "" else " " ++ a) c)
                               in  ct ++ replicate ((24 - length ct) `max` 2) ' ' ++ d)
            cs)
 
--- Se encarga de parsear un string y procesarlo (en la funcion handleStmt)
+-- Se encarga de parsear un string y procesarlo (en la función handleStmt)
 compilePhrase :: State -> String -> InputT IO State
-compilePhrase state x = do x' <- parseIO stmt_parse x
+compilePhrase state x = do x' <- parseIO parseStmt x
                            maybe (return state) (handleStmt state) x'
 
 -- Se encarga de parsear un string, convertirlo e imprimirlo
 printPhrase :: String -> InputT IO ()
-printPhrase x = do x' <- parseIO stmt_parse x
+printPhrase x = do x' <- parseIO parseStmt x
                    maybe (return ()) (printStmt . fmap (\y -> (y, conversion y))) x'
 
 -- Imprime por pantalla cuando se usa el comando :print
@@ -136,16 +133,14 @@ printStmt stmt = lift $ do let outtext = case stmt of
                                                    ++ render (printTerm e)
                            putStrLn outtext
 
--- Parsea un string
--- SI no hay problema devuelve el resultado del análisis, caso contrario muestra un error por pantalla 
+-- Parsea un string. Si no hay problema devuelve el resultado, caso contrario muestra un error por pantalla 
 parseIO :: (String -> ParseResult a) -> String -> InputT IO (Maybe a)
 parseIO p x = lift $ case p x of
                         Failed e -> do putStrLn e
                                        return Nothing
                         Ok r -> return (Just r)
 
--- Procesa un "lamda termino"
--- El cual es chequeado y evaluado. Si es un Def infiere el tipo, si es un Eval evalúa la expresión
+-- Procesa un "lambda termino", chequeadolo y evaluandolo. Def y Eval actualizan el estado, pero Eval siempre actualiza el mismo "Nombre".
 handleStmt :: State -> Stmt LamTerm -> InputT IO State
 handleStmt state stmt = lift $ do case stmt of
                                     Def x e -> checkType x (conversion e)
