@@ -27,7 +27,7 @@ data Command = Compile String
              | Quit
              | Help
              | Noop
-             | FindType String
+             | Type String
 
 data InteractiveCommand = Cmd [String] String (String -> Command) String
 
@@ -81,21 +81,21 @@ handleCommand state@(S ve) cmd =
                        return (Just state')
       Print s    -> let s' = reverse (dropWhile isSpace (reverse (dropWhile isSpace s)))
                     in printPhrase s' >> return (Just state)
-      FindType s -> do x' <- parseIO term s
-                       t  <- case x' of
-                               Nothing -> return $ Left "Error en el parsing."
-                               Just x  -> return $ infer ve $ conversion x
-                       case t of
-                         Left  err -> lift (putStrLn ("Error de tipos: " ++ err)) >> return ()
-                         Right t'  -> lift $ putStrLn $ render $ printType t'
-                       return (Just state)
+      Type s -> do x' <- parseIO term s
+                   t  <- case x' of
+                           Nothing -> return $ Left "Error en el parsing."
+                           Just x  -> return $ infer ve $ conversion x
+                   case t of
+                     Left  err -> lift (putStrLn ("Error de tipos: " ++ err)) >> return ()
+                     Right t'  -> lift $ putStrLn $ render $ printType t'
+                   return (Just state)
 
 commands :: [InteractiveCommand]
 commands = [Cmd [":browse"] ""       (const Browse) "Ver los nombres en scope", 
             Cmd [":print"]  "<exp>"  Print          "Imprime un término y sus ASTs", 
             Cmd [":quit"]   ""       (const Quit)   "Salir del intérprete", 
             Cmd [":help"]   ""       (const Help)   "Muestra una lista de comandos", 
-            Cmd [":type"]   "<term>" FindType       "Inferir el tipo del término"]
+            Cmd [":type"]   "<term>" Type           "Inferir el tipo del término"]
 
 helpTxt :: [InteractiveCommand] -> String
 helpTxt cs = "--------------------------------------------------\n"

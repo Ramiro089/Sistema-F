@@ -57,53 +57,53 @@ import Data.Char
 ------------
 %right 'suc' 
 %right 'cons'
-%left 'ifthenelse'
+%right 'if' 'then' 'else'
 %right 'R' 
 %right 'RL'
 
 %%
 
-Def     :  Defexp                      { $1 }
-        |  Exp	                       { Eval $1 }
+Def     :  Defexp                            { $1 }
+        |  Exp	                             { Eval $1 }
 
-Defexp  : DEF VAR '=' Exp              { Def $2 $4 } 
+Defexp  : DEF VAR '=' Exp                    { Def $2 $4 } 
 
 Exp     :: { LamTerm }
-        : '/\\'  ANY '.' Exp           { LTAbs $2 $4 }
-      --| Exp '<' Type '>'             { LTApp $1 $3 } 
-        | '\\' VAR ':' X '.' Exp       { LAbs $2 $4 $6 }
-        | NAbs                         { $1 }
+        : '/\\'  ANY '.' Exp                 { LTAbs $2 $4 }
+      --| Exp '<' Type '>'                   { LTApp $1 $3 } 
+        | '\\' VAR ':' X '.' Exp             { LAbs $2 $4 $6 }
+        | NAbs                               { $1 }
 
 X       :: { Type }
-        : Type                         { $1 }
-        | ANY                          { VarT $1 }
+        : Type                               { $1 }
+        | ANY                                { VarT $1 }
 
 NAbs    :: { LamTerm }
-        : Exp '<' Type '>'             { LTApp $1 $3 }
-        | NAbs Atom                    { LApp $1 $2 }
-        | 'suc' NAbs                   { LSuc $2 }
-        | 'cons' NAbs NAbs             { LCons $2 $3 }
+        : Exp '<' Type '>'                   { LTApp $1 $3 }
+        | NAbs Atom                          { LApp $1 $2 }
+        | 'suc' NAbs                         { LSuc $2 }
+        | 'cons' NAbs NAbs                   { LCons $2 $3 }
         | 'if' NAbs 'then' NAbs 'else' NAbs  { LIfThenElse $2 $4 $6 }
-        | 'R' NAbs NAbs NAbs           { LRec $2 $3 $4 }
-        | 'RL' NAbs NAbs NAbs          { LRecL $2 $3 $4 }
-        | Atom                         { $1 }
+        | 'R' NAbs NAbs NAbs                 { LRec $2 $3 $4 }
+        | 'RL' NAbs NAbs NAbs                { LRecL $2 $3 $4 }
+        | Atom                               { $1 }
 
 Atom    :: { LamTerm }
-        : VAR                          { LVar $1 }  
-        | '0'                          { LZero }
-        | 'T'                          { LTrue }
-        | 'F'                          { LFalse }
-        | 'nil'                        { LNil }
-        | '(' Exp ')'                  { $2 }
+        : VAR                                { LVar $1 }  
+        | '0'                                { LZero }
+        | 'T'                                { LTrue }
+        | 'F'                                { LFalse }
+        | 'nil'                              { LNil }
+        | '(' Exp ')'                        { $2 }
 
-Type    : TYPEE                        { EmptyT }
-        | '\\/' ANY '.' Type           { ForAllT $4 }
-        | Type '->' Type               { FunT $1 $3 }
-        | 'Nat'                        { NatT }
-        | 'Bool'                       { BoolT }
-        | 'List' Type                  { ListT $2 }
-        | '(' Type ')'                 { $2 }
-        | ANY                          { VarT $1 }
+Type    : TYPEE                              { EmptyT }
+        | '\\/' ANY '.' Type                 { ForAllT $4 }
+        | Type '->' Type                     { FunT $1 $3 }
+        | 'Nat'                              { NatT }
+        | 'Bool'                             { BoolT }
+        | 'List' Type                        { ListT $2 }
+        | '(' Type ')'                       { $2 }
+        | ANY                                { VarT $1 }
 
 {
 data ParseResult a = Ok a | Failed String deriving Show         
@@ -127,7 +127,7 @@ catchP m k = \s -> case m s  of
                      Failed e -> k e s
 
 happyError :: P a
-happyError = \s -> Failed $ "Error de parseo\n"++(s)
+happyError = \s -> Failed $ "Error durante el parseo\n"++(s)
 
 data Token = TVar String
            | TTypeE
@@ -188,20 +188,20 @@ lexer cont s = case s of
                         ("E",rest)    -> cont TTypeE rest
                         ("def",rest)  -> cont TDef rest
                         -- Bool
-                        ("if", rest) -> cont TIf rest
+                        ("if", rest)   -> cont TIf rest
                         ("then", rest) -> cont TThen rest
                         ("else", rest) -> cont TElse rest
-                        ("T", rest) -> cont TTrue rest
-                        ("F", rest) -> cont TFalse rest
+                        ("T", rest)    -> cont TTrue rest
+                        ("F", rest)    -> cont TFalse rest
                         ("Bool", rest) -> cont TTypeBool rest
                         -- Nat
                         ("suc", rest) -> cont TSuc rest
-                        ("R", rest) -> cont TNatRec rest
+                        ("R", rest)   -> cont TNatRec rest
                         ("Nat", rest) -> cont TTypeNat rest
                         -- List
-                        ("nil", rest) -> cont TNil rest
+                        ("nil", rest)  -> cont TNil rest
                         ("cons", rest) -> cont TCons rest
-                        ("RL", rest) -> cont TListRec rest
+                        ("RL", rest)   -> cont TListRec rest
                         ("List", rest) -> cont TTypeList rest
                         (var, rest) | all isUpper var -> cont (TAny var) rest
                                     | otherwise       -> cont (TVar var) rest

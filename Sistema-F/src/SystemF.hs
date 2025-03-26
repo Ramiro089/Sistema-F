@@ -79,7 +79,6 @@ lastElemIndex x xs = case elemIndices x xs of
                        l  -> Just (last l)
 
 ---------------------------------
-
 -- Sustituye una variable por un término en otro
 sub :: Int -> Term -> Term -> Term
 sub i t (Bound j) | i == j    = t
@@ -206,7 +205,6 @@ eval nvs (RecL t1 t2 t3) = case eval nvs t3 of
 eval _ t = error $ "No se puede convertir el termino " ++ show t ++ " a un valor"
 
 ---------------------------------
-
 -- Infiere el tipo de un término
 infer :: NameEnv Value Type -> Term -> Either String Type
 infer = infer' []

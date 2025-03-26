@@ -5,13 +5,6 @@ import  Common
 import  Text.PrettyPrint.HughesPJ
 import  Prelude hiding ((<>))
 
--- Lista de posibles nombres para variables
-vars :: [String]
-vars =
-  [ c : n
-  | n <- "" : map show [(1 :: Integer) ..]
-  , c <- ['x', 'y', 'z'] ++ ['a' .. 'w']
-  ]
 
 -- Lista de posibles cuantificadores
 cuantificadores :: [String]
@@ -19,6 +12,14 @@ cuantificadores =
   [ c : n
   | n <- "" : map show [(1 :: Integer) ..]
   , c <- ['X', 'Y', 'Z'] ++ ['A' .. 'W']
+  ]
+
+-- Lista de posibles nombres para variables
+vars :: [String]
+vars =
+  [ c : n
+  | n <- "" : map show [(1 :: Integer) ..]
+  , c <- ['x', 'y', 'z'] ++ ['a' .. 'w']
   ]
 
 parensIf :: Bool -> Doc -> Doc
