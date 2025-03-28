@@ -140,7 +140,10 @@ el funcionamiento del mismo, el resto de los archivos son de configuración.
 \subsection{app}
 \subsubsection{Main.hs}
 Este archivo es donde comienza la ejecución del programa al compilarse y ejecutarse (implementa el ejecutable final). Hace uso de una 
-serie de funciones para poder parser la entrada por teclado, determinar el comando ingresado, imprimir por pantalla, realizar la evaluación, entre muchas cosas más.
+serie de funciones para poder parser la entrada por teclado, determinar el comando ingresado, imprimir por pantalla, realizar la evaluación, entre muchas cosas más.\\
+
+Gran parte del \textbf{Main.hs} es idéntico al del TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado}, salvo por algunas modificaciones y simplificaciones para que 
+se ajuste al comportamiento requerido.
 
 \subsection{src}
 \subsubsection{Common.hs}
@@ -261,6 +264,27 @@ en diferentes categorías sintácticas). \\
                | RecL Term Term Term
                deriving (Show, Eq)
 \end{verbatim}
+
+
+Un tema que es interesante de explicar es cuando, hablando coloquialmente, el tipo de una variable tiene un para todos (es polimorfico), 
+veamos esto con un ejemplo. Sea la siguiente expresión:
+\begin{center}
+  (/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash/B. \textbackslash/A. A -$>$ B) . b) 
+\end{center}
+Tenemos que b es una función polimorfica, al obtenga su forma en Term se va a tener lo siguiente
+\begin{center}
+  ForAll (Lam (BoundForAll 0) (Lam (ForAllT (ForAllT (FunT (BoundForAll 0) (BoundForAll 1)))) (Bound 0)))
+\end{center}
+
+Donde se puede apreciar una cosa interesantes, se tiene un solo ForAll pero tenemos (BoundForAll 0) y (BoundForAll 1). Uno tendería a 
+pensar que esto es un error, pero no lo es ya que estos BoundForAll no están 'ligados' al ForAll sino al ForAllT.\\
+
+Es decir hay una distinción entre el ForAll y ForAllT al momento de usar variables cuantificadas, uno para los Type y otro para 
+los Term. Gráficamente seria:
+
+\begin{center}
+  \includegraphics[width=1\textwidth]{Imagenes/EjemploBoundForAllFunction.png}
+\end{center}
 
 \subsubsection{Evaluación}
 Para la evaluación el interprete sigue el orden de reducción \textbf{call-by-value} en donde tenemos las siguientes reglas, las cuales 
@@ -383,6 +407,7 @@ En la consola escribimos: (/\textbackslash A. \textbackslash a:A. \textbackslash
 Si quisiéramos evaluarla podría ser algo asi: (((((/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash /B. B -$>$ B) . b) $<$Nat$>$) 0) (/ \textbackslash X. \textbackslash x:X. x)) $<$Bool$>$) T\\
 El cual se reduce a: T
 
+\newpage
 
 \bibliographystyle{unsrt}
 \bibliography{lib}

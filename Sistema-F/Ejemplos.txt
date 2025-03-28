@@ -1,9 +1,19 @@
+Ejemplos del informe
 (/\X. \x:X .x) <Nat> 0
-
-(/\X. (\xs:List X. RL 0 (\x:X .\ys:List X. \r:Nat. suc r) xs)) <List Nat> (cons (cons 0 nil) nil) 
 
 (/\X. (\xs:List X. RL 0 (\x:X .\ys:List X. \r:Nat. suc r) xs)) <\/X. X -> X> (cons (/\X. \x:X. x) (cons (/\X. \x:X. x) nil)) 
 
 (((((/\A. \a:A. \b:(\/B. B -> B) . b) <Nat>) 0) (/\X. \x:X. x)) <Bool>) T
 
+Mas ejemplos
+(/\X. (\xs:List X. RL 0 (\x:X .\ys:List X. \r:Nat. suc r) xs)) <List Nat> (cons (cons 0 nil) nil) 
+
 /\A. /\B. /\C. \f: B->C->A. f
+
+((/\A. \a:A. \b:(\/B. \/A. B -> A -> A) . b) <Nat>) 0 (/\X./\Y. \x:X. \y:Y. y) <Nat> <Bool> 0 T
+
+(/\A. \a:A. \b:(\/B. \/A. B -> A -> A). \c:(\/A. A -> A). b)
+
+/\X. \x:X. /\Y. \y:Y. y
+
+(/\A. \a:A. \b:(\/B. \/A. B -> A -> A). /\C. \c:C. \f:(\/B. \/A. B -> A -> A). b)

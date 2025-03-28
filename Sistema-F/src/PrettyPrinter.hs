@@ -115,36 +115,32 @@ isAtom F    = True
 isAtom _    = False
 
 -------------------------------------------------
--- pretty-printer tipos
+-- pretty-printer 
 
-printForAllType :: Int -> Type -> Doc
-printForAllType n (ForAllT typee) = parens $
+printTypeAux :: Type -> Int -> Doc
+printTypeAux (FunT t1 t2) n = sep [parensIf (isFun t1) (printTypeAux t1 n), text "->", printTypeAux t2 n]
+printTypeAux EmptyT _ = text "E"
+
+-- Sistema F
+printTypeAux (ForAllT t) n = parens $
   text "\\/ "
     <> text (cuantificadores !! n)
     <> text ". "
-    <> printForAllType (n + 1) typee
-printForAllType _ typee = printType typee
-
--- Empty
-printType :: Type -> Doc
-printType EmptyT = text "E"
-
--- Función
-printType (FunT t1 t2) = sep [parensIf (isFun t1) (printType t1), text "->", printType t2]
-
--- Sistema F
-printType (ForAllT typee) = printForAllType 0 (ForAllT typee)
-printType (BoundForAll k) = text (cuantificadores !! k)
+    <> printTypeAux t n
+printTypeAux (BoundForAll k) n = text (cuantificadores !! k)
 
 -- Bool
-printType BoolT = text "Bool"
+printTypeAux BoolT _ = text "Bool"
 
 -- Nat
-printType NatT = text "Nat"
+printTypeAux NatT _ = text "Nat"
 
 -- List
-printType (ListT t)    = text "List " <> parensIf (inList t) (printType t)
-printType ListTEmpty = text "Lista Vacia"
+printTypeAux (ListT t)  n = text "List " <> parensIf (inList t) (printTypeAux t n)
+printTypeAux ListTEmpty  _ = text "Lista Vacía"
+
+printType :: Type -> Doc
+printType t = printTypeAux t 0
 
 isFun :: Type -> Bool
 isFun (FunT _ _) = True

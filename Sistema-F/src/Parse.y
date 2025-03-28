@@ -70,7 +70,6 @@ Defexp  : DEF VAR '=' Exp                    { Def $2 $4 }
 
 Exp     :: { LamTerm }
         : '/\\'  ANY '.' Exp                 { LTAbs $2 $4 }
-      --| Exp '<' Type '>'                   { LTApp $1 $3 } 
         | '\\' VAR ':' X '.' Exp             { LAbs $2 $4 $6 }
         | NAbs                               { $1 }
 
@@ -172,21 +171,21 @@ lexer cont s = case s of
                         | isAlpha c -> lexVar (c:cs)
                  ('\\':('/':cs)) -> cont TAnyType cs
                  ('/':('\\':cs)) -> cont TForAll cs
-                 ('\\':cs)-> cont TAbs cs
-                 ('.':cs) -> cont TDot cs
-                 ('(':cs) -> cont TOpen cs
-                 ('-':('>':cs)) -> cont TArrow cs
-                 (')':cs) -> cont TClose cs
-                 (':':cs) -> cont TColon cs
-                 ('=':cs) -> cont TEquals cs
-                 ('<':cs) -> cont TOpenBracket cs
-                 ('>':cs) -> cont TCloseBracket cs
-                 ('0':cs) -> cont TZero cs
-                 unknown -> Failed $ "No se reconoce "++(show $ take 10 unknown)++ "..."
+                 ('-':('>':cs))  -> cont TArrow cs
+                 ('\\':cs) -> cont TAbs cs
+                 ('.':cs)  -> cont TDot cs
+                 ('(':cs)  -> cont TOpen cs
+                 (')':cs)  -> cont TClose cs
+                 (':':cs)  -> cont TColon cs
+                 ('=':cs)  -> cont TEquals cs
+                 ('<':cs)  -> cont TOpenBracket cs
+                 ('>':cs)  -> cont TCloseBracket cs
+                 ('0':cs)  -> cont TZero cs
+                 unknown -> Failed $ "No se reconoce "++(show $ take 15 unknown)++ "..."
 
     where lexVar cs = case span isAlpha cs of
-                        ("E",rest)    -> cont TTypeE rest
-                        ("def",rest)  -> cont TDef rest
+                        ("E", rest)    -> cont TTypeE rest
+                        ("def", rest)  -> cont TDef rest
                         -- Bool
                         ("if", rest)   -> cont TIf rest
                         ("then", rest) -> cont TThen rest
