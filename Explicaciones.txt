@@ -1,0 +1,44 @@
+{-
+La idea de esta función es reemplazar los VarT en los tipos por los BoundForAll, pero voy a tener 2 posibilidades
+  1- El tipo es un ForAllT Ty, en donde los VarT que hay no son los mismo que en la expresión
+  2- El tipo no es un ForAllT Ty y los VarT depende de la expresión
+
+Para el segundo caso la idea es muy simple, se recorre el tipo y se cambian los VarT por los BoundForAll donde el Int es la ultima 
+posición del 'VarT' en una lista (Mas abajo se explica porque la ultima posición y no la primera)
+
+Para el primer caso es mas complicado, primero se busca y se arma un lista con todos los VarT que aparezcan (sin repetir) y a su vez se
+cuenta la cantidad de ForAllT Ty que había en la tipo. Si no coincide hay una variable sin cuantificar, si coincide se procede de la misma 
+forma que en el segundo caso.
+-}
+
+
+{-
+Aca es donde se hace el cambio de VarT a BoundForAll propiamente dicho. Hay que tener en cuenta que se puede tener una expresión del 
+tipo (Algo sin ForAllT Ty) -> (Algo con ForAllT Ty).
+Por esto hay que separa el caso del ForAllT Ty, asi busca los VarT correspondientes en la segunda expresión (que son propias de dicha 
+expresión).
+-}
+
+
+
+{-
+Esta función se encarga de buscar los VarT que aparecen en el Type, y cuenta la cantidad de veces que parecen los ForAllT Ty.
+Se devuelve un tupla con los VarT encontrados (sin repetición) y un numero que cuente la cantidad de ForAllT Ty que había 
+(La cantidad de VarT encontrados debe coincidir con el numero de ForAllT)
+-}
+
+
+{-
+Antes elemIndex' era:
+elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (elemIndex n c)
+
+El problema que surge es que como el Sistema F es un polimorfismo paramétrico, los 'para todos' pueden ocurrir en cualquier lugar, 
+entonces se puede escribir algo de este tipo:
+/\X. \x:X. /\X. \y:X. t
+
+Que baja nuestra definición de Sistema F, los dos '/\X.' son distintos, entonces para dar el correcto BoundForAll tenemos que buscar 
+la ultima ocurrencia de 'X' en la lista de los cuantificadores (cuant). Por eso a diferencia de var, busco la ultima ocurrencia.
+Pero si se escribiese:
+/\X. \x:X. /\Y. \y:Y. t
+No se tendría el problema anterior por ser claramente distintos los '/\X.' y '/\Y.'
+-}

@@ -2,12 +2,30 @@
 module SystemF ( conversion, eval, infer, quote )
 where
 
+import qualified Data.Set as Set
 import           Data.List                  ( elemIndex, elemIndices )
 import           Data.Maybe                 ( fromJust, fromMaybe, maybe )
 import           Prelude
 import           Text.PrettyPrint.HughesPJ  ( render )
 import           PrettyPrinter
 import           Common
+
+
+-- Costo O(n + m log m)
+uniqueAppend :: (Ord a) => [a] -> [a] -> [a]
+uniqueAppend xs ys = xs ++ aux (Set.fromList xs) ys
+  where
+    aux _ [] = []
+    aux seen (y:ys) | y `Set.member` seen = aux seen ys
+                    | otherwise = y : aux (Set.insert y seen) ys
+
+-- Redefino la función (\\) de Data.List, para que su complejidad sea menor
+-- Originalmente seria O(n*m) pero de esta forma es O(n log m)
+(\\) :: (Ord a) => [a] -> [a] -> [a]
+xs \\ ys = let setYs = Set.fromList ys
+           in filter (`Set.notMember` setYs) xs
+
+------------------------------------------------
 
 -- Convierte un LamTerm a un Term, aplicando una función de conversion
 toTerm:: (LamTerm -> Term) -> LamTerm -> [String] -> Term
@@ -45,80 +63,49 @@ conversion' vars cuan t@(LAbs name _ _)      = toTerm (conversion' (name:vars) c
 conversion' vars cuan t@(LTAbs name lamTerm) = toTerm (conversion' vars (cuan ++ [name])) t cuan
 conversion' vars cuan t                      = toTerm (conversion' vars cuan) t cuan
 
----------------------------------
-{-
-La idea de esta función es reemplazar los VarT en los tipos por los BoundForAll, pero voy a tener 2 posibilidades
-  1- El tipo es un ForAllT Ty, en donde los VarT que hay no son los mismo que en la expresión
-  2- El tipo no es un ForAllT Ty y los VarT depende de la expresión
+------------------------------------------
 
-Para el segundo caso la idea es muy simple, se recorre el tipo y se cambian los VarT por los BoundForAll donde el Int es la ultima 
-posición del 'VarT' en una lista (Mas abajo se explica porque la ultima posición y no la primera)
-
-Para el primer caso es mas complicado, primero se busca y se arma un lista con todos los VarT que aparezcan (sin repetir) y a su vez se
-cuenta la cantidad de ForAllT Ty que había en la tipo. Si no coincide hay una variable sin cuantificar, si coincide se procede de la misma 
-forma que en el segundo caso.
--}
 conversionType :: Type -> [String] -> Type
-conversionType (ForAllT (Ty t)) cuan = let (s, i) = conversionForAll [] (ForAllT (Ty t))
-                                       in case length s of 
-                                            i -> conversionType' (ForAllT (Ty t)) s
-                                            _ -> error "Variable no cuantificada"
-conversionType t cuan = conversionType' t cuan
+conversionType t@(ForAllT (Ty _)) cuanOG = let (cuan, count) = conversionForAll cuan t
+                                           in (if length cuan == count then conversionType' t cuanOG cuan 
+                                                                       else conversionType' t cuanOG ((\\) cuan cuanOG))
+conversionType t cuanOG = conversionType' t cuanOG []
 
-{-
-Aca es donde se hace el cambio de VarT a BoundForAll propiamente dicho. Hay que tener en cuenta que se puede tener una expresión del 
-tipo (Algo sin ForAllT Ty) -> (Algo con ForAllT Ty).
-Por esto hay que separa el caso del ForAllT Ty, asi busca los VarT correspondientes en la segunda expresión (que son propias de dicha 
-expresión).
--}
-conversionType' :: Type -> [String] -> Type
-conversionType' (ForAllT (Ty t))  cuan = case cuan of 
-                                          [] -> conversionType (ForAllT (Ty t)) cuan
-                                          _  -> ForAllT (Ty (conversionType' t cuan))
-conversionType' (VarT typee) cuan = BoundForAll (elemIndex' typee cuan)
-conversionType' (FunT t1 t2) cuan = FunT (conversionType' t1 cuan) (conversionType' t2 cuan)
-conversionType' (ListT t)    cuan = ListT (conversionType' t cuan)
-conversionType' t            cuan = t
+------------------------------------------
 
-{-
-Esta función se encarga de buscar los VarT que aparecen en el Type, y cuenta la cantidad de veces que parecen los ForAllT Ty.
-Se devuelve un tupla con los VarT encontrados (sin repetición) y un numero que cuente la cantidad de ForAllT Ty que había 
-(La cantidad de VarT encontrados debe coincidir con el numero de ForAllT)
--}
+conversionType' :: Type -> [String] -> [String] -> Type
+conversionType' t@(ForAllT (Ty u)) cuanOG cuan = case cuan of 
+                                                   [] -> conversionType t cuanOG
+                                                   _  -> ForAllT (Ty (conversionType' u cuanOG cuan))
+conversionType' (VarT typee) cuanOG cuan = case elemIndex typee cuan of                                -- Primero me fijo si es del tipo
+                                             Just x -> BoundForAll $ Inner x    
+                                             Nothing -> BoundForAll $ External (elemIndex' typee cuanOG) -- Luego trato de buscarlo fuera
+conversionType' (FunT t1 t2) cuanOG cuan = FunT (conversionType' t1 cuanOG cuan) (conversionType' t2 cuanOG cuan)
+conversionType' (ListT t)    cuanOG cuan = ListT (conversionType' t cuanOG cuan)
+conversionType' t            cuanOG cuan = t
+
+------------------------------------------
 conversionForAll :: [String] -> Type -> ([String], Int)
 conversionForAll cuan (ForAllT (Ty t1)) = let (s, i) = conversionForAll cuan t1
                                           in (s, i+1)
 conversionForAll cuan (FunT t1 t2) = let (xs, i)  = conversionForAll cuan t1 
                                          (ys, i') = conversionForAll cuan t2
-                                         l = foldl (\zs x -> if x `elem` zs then zs else zs ++ [x]) xs ys -- Elimino VarT repetidos
+                                         l = uniqueAppend xs ys
                                      in (l, i+i')
 conversionForAll cuan (VarT typee) = ([typee], 0)
 conversionForAll cuan t            = ([], 0)
 
+------------------------------------------
+
 elemIndex' :: String -> [String] -> Int
 elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (lastElemIndex n c)
-
-{-
-Antes elemIndex' era:
-elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (elemIndex n c)
-
-El problema que surge es que como el Sistema F es un polimorfismo paramétrico, los 'para todos' pueden ocurrir en cualquier lugar, 
-entonces se puede escribir algo de este tipo:
-/\X. \x:X. /\X. \y:X. t
-
-Que baja nuestra definición de Sistema F, los dos '/\X.' son distintos, entonces para dar el correcto BoundForAll tenemos que buscar 
-la ultima ocurrencia de 'X' en la lista de los cuantificadores (cuant). Por eso a diferencia de var, busco la ultima ocurrencia.
-Pero si se escribiese:
-/\X. \x:X. /\Y. \y:Y. t
-No se tendría el problema anterior por ser claramente distintos los '/\X.' y '/\Y.'
--}
 
 lastElemIndex :: Eq a => a -> [a] -> Maybe Int
 lastElemIndex x xs = case elemIndices x xs of
                        [] -> Nothing
                        l  -> Just (last l)
 
----------------------------------
+------------------------------------------
 -- Sustituye una variable por un término en otro
 sub :: Int -> Term -> Term -> Term
 sub i t (Bound j) | i == j    = t
@@ -159,13 +146,13 @@ sub i t (RecL u v w) = let u' = sub i t u
 sus :: Term -> Type -> Term
 sus (Lam t u) typee       = Lam (susType t typee False) (sus u typee)
 sus (t1 :@: t2) typee     = sus t1 typee :@: sus t2 typee
-
+-- Sistema F
 sus (ForAll t) typee      = ForAll (sus t typee)
 sus (TApp t typee') typee = TApp (sus t typee) typee'
-
+-- Casos Recursivos
 sus (Rec  t u v) typee    = Rec t (sus u typee) v
 sus (RecL t u v) typee    = RecL (sus t typee) (sus u typee) (sus v typee)
-
+-- Cualquier Otro
 sus t _                   = t
 
 {-
@@ -177,11 +164,12 @@ ForAll y ForAllT Ty). Para marcar esta difernecia se usa un Bool, si es True es 
 
 -}
 susType :: Type -> Type -> Bool -> Type
-susType (FunT t1 t2) typee b     = FunT (susType t1 typee b) (susType t2 typee b)
-susType (ListT t)    typee b     = ListT (susType t typee b)
-susType (ForAllT (Ty t))  typee True  = ForAllT (Ty (susType t typee True))
-susType (BoundForAll k) typee _  = if k == 0 then typee else BoundForAll (k - 1)
-susType t _                   _  = t
+susType (FunT t1 t2)     typee b = FunT (susType t1 typee b) (susType t2 typee b)
+susType (ListT t)        typee b = ListT (susType t typee b)
+susType (ForAllT (Ty t)) typee b = ForAllT (Ty (susType t typee b))
+susType (BoundForAll (External k)) typee _ = if k == 0 then typee else BoundForAll $ External (k - 1)
+susType (BoundForAll (Inner k)) typee True = if k == 0 then typee else BoundForAll $ Inner (k - 1)
+susType t _ _                              = t
 
 -- Convierte valor a un término equivalente
 quote :: Value -> Term
@@ -250,7 +238,7 @@ eval nvs (RecL t1 t2 t3) = case eval nvs t3 of
 -- Expresión incorrecta
 eval _ t = error $ "No se puede convertir el termino " ++ show t ++ " a un valor"
 
----------------------------------
+------------------------------------------
 -- Infiere el tipo de un término
 infer :: NameEnv Value Type -> Term -> Either String Type
 infer = infer' []
@@ -306,7 +294,7 @@ singleMatch _ e@(Left _) = e
 singleMatch (expected_type, rst) e@(Right t) | t == expected_type = rst 
                                              | otherwise = matchError expected_type t
 
----------------------------------
+------------------------------------------
 
 infer' :: Context -> NameEnv Value Type -> Term -> Either String Type
 infer' c _  (Bound i) = ret (c !! i)

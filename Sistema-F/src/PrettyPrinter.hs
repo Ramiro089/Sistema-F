@@ -4,6 +4,7 @@ where
 import  Common
 import  Text.PrettyPrint.HughesPJ
 import  Prelude hiding ((<>))
+import Data.String (String)
 
 
 -- Lista de posibles cuantificadores
@@ -30,62 +31,62 @@ parensIf False = id
 -- pretty-printer términos
 
 pp :: Int -> [String] -> Int -> [String] -> Term -> Doc
-pp ii vs _ _ (Bound k)             = text (vs !! (ii - k - 1))
-pp _  _  ii' vs' (Free (Global s)) = text s
-pp ii vs ii' vs' (i :@: c) = 
-  sep [parensIf (isLam i) (pp ii vs ii' vs' i), nest 1 (parensIf (isLam c || isApp c) (pp ii vs ii' vs' c))]
+pp i v _ _ (Bound k) = text (v !! (i - k - 1))
+pp _  _   k cuanExter (Free (Global s)) = text s
+pp i v k cuanExter (t :@: u) = 
+  sep [parensIf (isLam t) (pp i v k cuanExter t), nest 1 (parensIf (isLam u || isApp u) (pp i v k cuanExter u))]
 
-pp ii vs ii' vs' (Lam t c) =
+pp i v k cuanExter (Lam t c) =
   text "\\"
-    <> text (vs !! ii)
+    <> text (v !! i)
     <> text ":"
-    <> printType t
+    <> printType t   -- Ver esto
     <> text ". "
-    <> pp (ii + 1) vs ii' vs' c
+    <> pp (i+1) v k cuanExter c
 
-pp ii vs ii' vs' (ForAll term) = 
+pp i v k cuanExter (ForAll term) = 
   text "/\\"
-    <> text (vs' !! ii')
+    <> text (cuanExter !! k)
     <> text ". "
-    <> pp ii vs (ii' + 1) vs' term
+    <> pp i v (k+1) cuanExter  term
 
-pp ii vs ii' vs' (TApp t typee) =
-  parens (pp ii vs ii' vs' t)
+pp i v k cuanExter  (TApp t typee) =
+  parens (pp i v k cuanExter t)
     <> text " <"
     <> printType typee
     <> text ">"
   
-pp ii vs ii' vs' t | isBool t  = printBool ii vs ii' vs' t
-                   | isNat t   = printNat ii vs ii' vs' t
-                   | otherwise = printList ii vs ii' vs' t
+pp i v k cuanExter t | isBool t  = printBool i v k cuanExter t
+                     | isNat t   = printNat  i v k cuanExter t
+                     | otherwise = printList i v k cuanExter t
 
 
 applyParen :: Int -> [String] -> Int -> [String] -> Term -> Doc
-applyParen ii vs ii' vs' t = parensIf (not $ isAtom t) (pp ii vs ii' vs' t)
+applyParen i v k cuanExter t = parensIf (not $ isAtom t) (pp i v k cuanExter t)
 
 printBool :: Int -> [String] -> Int -> [String] -> Term -> Doc
-printBool ii vs ii' vs' T = text "true" 
-printBool ii vs ii' vs' F = text "false"
-printBool ii vs ii' vs' (IfThenElse t1 t2 t3) =
+printBool i v k cuanExter T = text "true" 
+printBool i v k cuanExter F = text "false"
+printBool i v k cuanExter (IfThenElse t1 t2 t3) =
   text "if "
-    <> pp ii vs ii' vs' t1
+    <> pp i v k cuanExter t1
     <> text " then "
-    <> pp ii vs ii' vs' t2
+    <> pp i v k cuanExter t2
     <> text " else "
-    <> pp ii vs ii' vs' t3
+    <> pp i v k cuanExter t3
 
 printNat :: Int -> [String] -> Int -> [String] -> Term -> Doc
-printNat ii vs ii' vs' Zero            = text "0"
-printNat ii vs ii' vs' (Suc t@(Suc _)) = sep [text "suc", pp ii vs ii' vs' t]
-printNat ii vs ii' vs' (Suc t)         = sep [text "suc", applyParen ii vs ii' vs' t]
-printNat ii vs ii' vs' (Rec t u v)     = sep [text "R", applyParen ii vs ii' vs' t, applyParen ii vs ii' vs' u, applyParen ii vs ii' vs' v]
-printNat ii vs ii' vs' t               = pp ii vs ii' vs' t
+printNat i v k cuanExter Zero            = text "0"
+printNat i v k cuanExter (Suc t@(Suc _)) = sep [text "suc", pp i v k cuanExter t]
+printNat i v k cuanExter (Suc t)         = sep [text "suc", applyParen i v k cuanExter t]
+printNat i v k cuanExter (Rec t u w)     = sep [text "R", applyParen i v k cuanExter t, applyParen i v k cuanExter u, applyParen i v k cuanExter w]
+printNat i v k cuanExter t               = pp i v k cuanExter t
 
 printList :: Int -> [String] -> Int -> [String] -> Term -> Doc
-printList ii vs ii' vs' Nil          = text "nil"
-printList ii vs ii' vs' (Cons t u)   = sep [text "cons", applyParen ii vs ii' vs' t, applyParen ii vs ii' vs' u]
-printList ii vs ii' vs' (RecL t u v) = sep [text "RL", applyParen ii vs ii' vs' t, applyParen ii vs ii' vs' u, applyParen ii vs ii' vs' v]
-printList ii vs ii' vs' t            = pp ii vs ii' vs' t
+printList i v k cuanExter Nil          = text "nil"
+printList i v k cuanExter (Cons t u)   = sep [text "cons", applyParen i v k cuanExter t, applyParen i v k cuanExter u]
+printList i v k cuanExter (RecL t u w) = sep [text "RL", applyParen i v k cuanExter t, applyParen i v k cuanExter u, applyParen i v k cuanExter w]
+printList i v k cuanExter t            = pp i v k cuanExter t
 
 isLam :: Term -> Bool
 isLam (Lam _ _) = True
@@ -116,39 +117,44 @@ isAtom _    = False
 
 -------------------------------------------------
 -- pretty-printer 
-printTypeAuxForAll :: Type -> Int -> Int -> Doc
-printTypeAuxForAll (ForAllT (Ty t)) n k = parens $
+printTypeAuxForAll :: Type -> Int -> Int -> [String] -> [String] -> Doc
+printTypeAuxForAll (ForAllT (Ty t)) n k cuanInter cuanExter = parens $
   text "\\/ "
-    <> text (cuantificadores !! k)
+    <> text (cuanInter !! k)
     <> text ". "
-    <> printTypeAuxForAll t n (k+1)
-printTypeAuxForAll (FunT t1 t2) n k = sep [parensIf (isFun t1) (printTypeAuxForAll t1 n k), text "->", printTypeAuxForAll t2 n k] 
-printTypeAuxForAll t n k = printTypeAux t n 
+    <> printTypeAuxForAll t n (k+1) cuanInter cuanExter
+printTypeAuxForAll (FunT t1 t2) n k cuanInter cuanExter = sep [parensIf (isFun t1) (printTypeAuxForAll t1 n k cuanInter cuanExter), text "->", printTypeAuxForAll t2 n k cuanInter cuanExter] 
+printTypeAuxForAll t n k  cuanInter cuanExter = printTypeAux t n cuanInter cuanExter
     
-printTypeAux :: Type -> Int -> Doc
+printTypeAux :: Type -> Int -> [String] -> [String] -> Doc
 -- Sistema F
-printTypeAux (ForAllT (Lambd t)) n = parens $
+printTypeAux (ForAllT (Lambd t)) n cuanInter cuanExter = parens $
   text "\\/ "
-    <> text (cuantificadores !! n)
+    <> text (cuanExter !! n)
     <> text ". "
-    <> printTypeAux t (n+1)
-printTypeAux t@(ForAllT (Ty _)) n = printTypeAuxForAll t n 0
-printTypeAux   (BoundForAll k)  _ = text (cuantificadores !! k)
+    <> printTypeAux t (n+1) cuanInter cuanExter
+printTypeAux t@(ForAllT (Ty _)) n cuanInter cuanExter = printTypeAuxForAll t n 0 cuanInter cuanExter
+printTypeAux (BoundForAll (Inner k))  _  cuanInter cuanExter = text (cuanInter !! k)
+printTypeAux (BoundForAll (External k))  _  cuanInter cuanExter = text (cuanExter !! k)
+
+-------------------------------------------------------------------------------------
 
 -- Bool, Nat, Empty
-printTypeAux BoolT  _ = text "Bool"
-printTypeAux NatT   _ = text "Nat"
-printTypeAux EmptyT _ = text "E"
+printTypeAux BoolT  _ _ _ = text "Bool"
+printTypeAux NatT   _ _ _ = text "Nat"
+printTypeAux EmptyT _ _ _ = text "E"
 
 -- Funcion
-printTypeAux (FunT t1 t2) n = sep [parensIf (isFun t1) (printTypeAux t1 n), text "->", printTypeAux t2 n]
+printTypeAux (FunT t1 t2) n cuanInter cuanExter = sep [parensIf (isFun t1) (printTypeAux t1 n cuanInter cuanExter), text "->", printTypeAux t2 n cuanInter cuanExter]
 
 -- List
-printTypeAux (ListT t)  n = text "List " <> parensIf (inList t) (printTypeAux t n)
-printTypeAux ListTEmpty _ = text "Lista Vacía"
+printTypeAux (ListT t)  n cuanInter cuanExter = text "List " <> parensIf (inList t) (printTypeAux t n cuanInter cuanExter)
+printTypeAux ListTEmpty _ cuanInter cuanExter = text "Lista Vacía"
 
 printType :: Type -> Doc
-printType t = printTypeAux t 0
+printType t = printTypeAux t 0 cuanInter cuanExter
+  where cuanInter = map (++ "'") cuantificadores
+        cuanExter = cuantificadores
 
 -------------------------------------------------
 
@@ -189,4 +195,6 @@ fv (RecL t u v) = fv t ++ fv u ++ fv v
 
 -------------------------------------------------
 printTerm :: Term -> Doc
-printTerm t = pp 0 (filter (\v -> v `notElem` fv t) vars) 0 cuantificadores t
+printTerm t = pp 0 vars' 0 cuanExter t
+  where cuanExter = cuantificadores
+        vars' = filter (\v -> v `notElem` fv t) vars
