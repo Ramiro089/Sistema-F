@@ -116,41 +116,51 @@ isAtom _    = False
 
 -------------------------------------------------
 -- pretty-printer 
-
+printTypeAuxForAll :: Type -> Int -> Int -> Doc
+printTypeAuxForAll (ForAllT (Ty t)) n k = parens $
+  text "\\/ "
+    <> text (cuantificadores !! k)
+    <> text ". "
+    <> printTypeAuxForAll t n (k+1)
+printTypeAuxForAll (FunT t1 t2) n k = sep [parensIf (isFun t1) (printTypeAuxForAll t1 n k), text "->", printTypeAuxForAll t2 n k] 
+printTypeAuxForAll t n k = printTypeAux t n 
+    
 printTypeAux :: Type -> Int -> Doc
-printTypeAux (FunT t1 t2) n = sep [parensIf (isFun t1) (printTypeAux t1 n), text "->", printTypeAux t2 n]
-printTypeAux EmptyT _ = text "E"
-
 -- Sistema F
-printTypeAux (ForAllT t) n = parens $
+printTypeAux (ForAllT (Lambd t)) n = parens $
   text "\\/ "
     <> text (cuantificadores !! n)
     <> text ". "
-    <> printTypeAux t n
-printTypeAux (BoundForAll k) n = text (cuantificadores !! k)
+    <> printTypeAux t (n+1)
+printTypeAux t@(ForAllT (Ty _)) n = printTypeAuxForAll t n 0
+printTypeAux   (BoundForAll k)  _ = text (cuantificadores !! k)
 
--- Bool
-printTypeAux BoolT _ = text "Bool"
+-- Bool, Nat, Empty
+printTypeAux BoolT  _ = text "Bool"
+printTypeAux NatT   _ = text "Nat"
+printTypeAux EmptyT _ = text "E"
 
--- Nat
-printTypeAux NatT _ = text "Nat"
+-- Funcion
+printTypeAux (FunT t1 t2) n = sep [parensIf (isFun t1) (printTypeAux t1 n), text "->", printTypeAux t2 n]
 
 -- List
 printTypeAux (ListT t)  n = text "List " <> parensIf (inList t) (printTypeAux t n)
-printTypeAux ListTEmpty  _ = text "Lista Vacía"
+printTypeAux ListTEmpty _ = text "Lista Vacía"
 
 printType :: Type -> Doc
 printType t = printTypeAux t 0
+
+-------------------------------------------------
 
 isFun :: Type -> Bool
 isFun (FunT _ _) = True
 isFun _          = False
 
 inList :: Type -> Bool
-inList (ListT _)   = True
-inList (FunT _ _)  = True
-inList (ForAllT _) = True
-inList _           = False
+inList (ListT _)        = True
+inList (FunT _ _)       = True
+inList (ForAllT (Ty _)) = True
+inList _                = False
 
 fv :: Term -> [String]
 fv (Bound _)         = []

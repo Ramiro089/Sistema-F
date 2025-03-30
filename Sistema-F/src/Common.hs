@@ -14,17 +14,32 @@ newtype Name =  Global String deriving (Show, Eq)
 type NameEnv v t = [(Name, (v, t))]
 
 -- Tipos
+{-
+Cuando se estaba haciendo el printType surgió un problema, y fue necesario dividir el ForAllT en dos posibles casos 
+debido a que es necesario distinguir entre '/\' y '\/', pero se debe mantener la 'igualdad' entre ambos.
+
+En un inicia se usaba un mismo tipo para ambos, pero al querer imprimir había inconsistencia, por eso se unificaron en un nuevo 
+constructor llamador Fat (el nombre viene de ForAllT). De esta forma los '/\' se representan con Lambd y los '\/' con Ty. 
+-}
 data Type = EmptyT 
           | FunT Type Type
           | BoundForAll Int
           | VarT String
-          | ForAllT Type
+          | ForAllT Fat
           | BoolT
           | NatT
           | ListTEmpty
           | ListT Type
           deriving (Show, Eq)
-  
+
+data Fat = Lambd Type | Ty Type deriving (Show)
+
+instance Eq Fat where
+    Ty t1 == Lambd t2 = t1 == t2
+    Lambd t1 == Ty t2 = t1 == t2
+    Ty t1 == Ty t2 = t1 == t2
+    Lambd t1 == Lambd t2 = t1 == t2
+
 -- Términos con nombres
 data LamTerm  =  LVar String
               |  LAbs String Type LamTerm

@@ -147,22 +147,22 @@ se ajuste al comportamiento requerido.
 
 \subsection{src}
 \subsubsection{Common.hs}
-En este archivo es donde se encuentran las definición de los tipo y valores. Es decir es donde se definen los términos y valores que utilizara el Sistema F.
+En este archivo es donde se definen la forma que tendrán los valores, términos y tipos del Sistema F. Para estos nos basamos en la gramática del mismo.
 
 \subsubsection{Parse.y}
 Para generar el parser utilizaremos happy. En este archivo se generan los parsers a utilizar, se definen los tokens que acepta el parse, 
 entre más funciones. También es donde se define el lexer que se utilizara como analizador lexicográfico de la entrada. \\ 
 
-Para crear el archivo se utilizo el Parser.y del TPº2 \cite{tp2:lambdaCalculoSimpleTipado} y la documentación de Happy \cite{haskellHappy}.
 Se tiene 2 parses, uno es el parseStmt en donde el no terminal de nivel superior (top-level non-terminal) es \textbf{Def} y el 
-segundo en donde el top-level non-terminal es \textbf{Exp}. \\
+segundo en donde el top-level non-terminal es \textbf{Exp}. 
+Para crear el archivo se utilizo el Parser.y del TPº2 \cite{tp2:lambdaCalculoSimpleTipado} y la documentación de Happy \cite{haskellHappy}. \\
 
 \subsubsection{PrettyPrinter.hs}
 Para poder mostrar los términos se utilizo la biblioteca pretty printing, la cual consiste en una serie de combinados desarrollada por John Hughes. Aca es 
 donde se encuentra implementado el pretty printer para el Sistema F. \\
 Aca podemos distinguir 2 función importantes:
 \begin{itemize}[label=$\bullet$]
-  \item {pp: la cual dado un Term lo imprime por pantalla.}
+  \item {printTerm: la cual dado un Term lo imprime por pantalla.}
   \item {printType: la cual se encarga de imprimir por pantalla los Type.}
 \end{itemize}
 
@@ -185,38 +185,96 @@ Como se menciono anteriormente, la implementación de estos se encuentra en el a
 \noindent Para los tipos es:
 \begin{verbatim}
     data Type = EmptyT 
-              | ListTEmpty
               | FunT Type Type
               | BoundForAll Int
               | VarT String
-              | ForAllT Type
+              | ForAllT Fat
               | BoolT
               | NatT
+              | ListTEmpty
               | ListT Type
               deriving (Show, Eq)
+    
+    data Fat = Lambd Type | Ty Type deriving (Show)
+    
+    instance Eq Fat where
+        Ty t1 == Lambd t2 = t1 == t2
+        Lambd t1 == Ty t2 = t1 == t2
+        Ty t1 == Ty t2 = t1 == t2
+        Lambd t1 == Lambd t2 = t1 == t2
 \end{verbatim}
 
-De este definición podemos ver que hay más elementos en Type que en la gramática de tipos, esto se debe a que se agregaron 2 tipos más
-los cuales son BoundForAll y ListEmpty. \\
+De esta definicion se pueden ver muchas cosas, asi que vayamos por parte. Veamos primero la declaracion del Type, esta se basa en la gramatica del Sistema F, pero 
+esta posee 2 elementos de mas, los cuales son: 
 
-Como se van a poder usar listas de todo tipo surge un problema a la hora de usar una lista vacía, ya que se debería especificar el tipo, 
-a pesar de estar vacía. 
-Para evitar y simplificar esto lo que decidió fue darle un tipo especial a la lista vacía, \textbf{ListTEmpty}, de esta forma se evita 
-tener que darle un tipo especifico.
+%Viendo primero la parte de declaracion de tipo, podemos ver que esta posee 3 elementos de mas 
+%que en la gramatica del Sistema F, estos son BoundForAll, ListEmpty y ForAllLambd, donde sus funcioens son:
 
-Pero esto trajo problemas, por ejemplo en la función infer' en el caso de RL o en la función match en el caso de compara el tipo de una lista vacía con un tipo que es 
-una lista pero no vacía. Para solucionar este inconveniente lo que se hizo fue separar en casos, uno es cuando la lista es 
-vacía y el otro cuando no es una lista vacía.\\
+\begin{itemize}[label=$\bullet$]
+  \item {\textbf{ListTEmpty}\\
+  Como se van a poder usar listas de todo tipo surge un problema a la hora de usar una lista vacía, ya que se debería especificar el tipo, 
+  a pesar de estar vacía. 
+  Para evitar y simplificar esto lo que decidió fue darle un tipo especial a la lista vacía, \textbf{ListTEmpty}, de esta forma se evita 
+  tener que darle un tipo especifico.
+  
+  Teniéndose que agregar un caso para lista vacía en las funciones que pueden recibir una como argumento (como infer' o match)
 
-En el caso del BoundForAll, este no es un tipo per se, sino que su función es similar a la idea 
-de los indices de De Brujin. Esto seria, coloquialmente hablando, indicar a que \textbf{para todo} esta ligada la variable cuantificada, la idea es la siguiente:
+  %%Pero esto trajo problemas, por ejemplo en la función infer' en el caso de RL o en la función match en el caso de compara el tipo de una lista vacía con un tipo que es 
+  %%una lista pero no vacía. Para solucionar este inconveniente lo que se hizo fue separar en casos, uno es cuando la lista es 
+  %%vacía y el otro cuando no es una lista vacía.
+  }
 
-\begin{center}
-    \includegraphics[width=0.7\textwidth]{Imagenes/EjemploBoundForAll.png}
-\end{center}
+  \item {\textbf{BoundForAll}\\
+  En este caso, este no es un tipo per se, sino que su función es similar a la idea 
+  de los indices de De Brujin. Esto seria, coloquialmente hablando, indicar a que \textbf{para todo} esta ligada la variable cuantificada, la idea es la siguiente:
 
-En un inicio la idea era poner el BoundForAll con los Term (como el Bound que esta en Term), pero como esta idea esta relacionada con 
-los tipos resulto más practico agregarlo aca.
+  \begin{center}
+      \includegraphics[width=0.7\textwidth]{Imagenes/EjemploBoundForAll.png}
+  \end{center}
+
+  En un inicio la idea era poner el BoundForAll con los Term (como el Bound que esta en Term), pero como esta idea esta relacionada con 
+  los tipos resulto más practico agregarlo aca.}
+  
+  \end{itemize}
+
+  Una decision de diseño importante fue el \textbf{ForAllT Fat}, la idea del tipo \textbf{Fat} es la de distinguir el '/\textbackslash' y el '\textbackslash /' 
+  en las expresiones a la hora de imprimir por pantalla, pero que a la vez sean iguales para poder realizar la aplicación. Usemos un ejemplo para ilustrar esto, 
+  tenemos la siguiente expresión:
+
+  \begin{center}
+    (/\textbackslash X. \textbackslash x:X. /\textbackslash Y. \textbackslash y:Y. y).
+  \end{center} 
+
+  El printType no pude distinguir que variable cuantificada va en cada '/\textbackslash'. Para esto se lleva un contador, el cual controla la cantidad de 
+  '/\textbackslash' que aparecen en la expresión. Ahora, si no se hiciese la distinción del \textbf{Fat}, en expresiones como la siguiente 
+
+  \begin{center}
+    (/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash /B. B -$>$ B) . b)
+  \end{center}  
+
+  también se estaría teniendo en cuenta los '\textbackslash /' al momento de contar.
+
+
+  %\item {\textbf{ForAllLambd}\\
+  %La función que tiene el ForAllLambd es la misma que la del ForAllT. En un inicio dicha no existía ForAllLambd solo ForAllT (els segundo asi la funciones del primero),  
+  %pero esto acarriaba un problema a la hora de realizar el printType. Veamos este problema, se puede ingresar algo asi:
+  
+  %%El printType no pude distinguir que variable cuantificada va en cada '/\textbackslash'. Una solución seria un contador, el cual va contando la cantidad de veces que 
+  %%aparece el '/\textbackslash', que en la representación seria un ForAllT. 
+  %%Pero si se tiene este otro ejemplo:
+  
+  %el '\textbackslash /' también esta representado por un ForAllT, entonces el contador incrementaría erróneamente. Ademas que es imposible distinguir cuando el ForAllT 
+  %se refiere a un '\textbackslash /' o a un '/\textbackslash'.
+  %Entonces para evitar este problema se define un nuevo constructor ForAllLambda que representa al '/\textbackslash', minetras que el ForAllT representaria el 
+  %'\textbackslash /'. 
+  %
+  %Pero debido a esto se tiene que definir 'manualmente' el Eq ya que se necesita que el ForAllLambd y el ForAllT sean lo mismo, debido que cuando se aria una sustitucion 
+  %como por ejemplo: 
+  %\begin{center}
+  %  (\textbackslash b:(\textbackslash /B. B -$>$ B) . b) (/\textbackslash X. \textbackslash x:X. x)
+  %\end{center}  
+  %el tipo de b usa ForAllT y el tipo que lo sustituye usa ForAllLambd.
+  %}
 
 \noindent Para las expresiones del lambda calculo se tiene:
 \begin{verbatim}
@@ -266,14 +324,14 @@ en diferentes categorías sintácticas). \\
 \end{verbatim}
 
 
-Un tema que es interesante de explicar es cuando, hablando coloquialmente, el tipo de una variable tiene un para todos (es polimorfico), 
-veamos esto con un ejemplo. Sea la siguiente expresión:
+Un tema que es interesante de explicar es cuando, el tipo de una variable tiene un para todos (es polimorfico), veamos esto con un ejemplo. 
+Sea la siguiente expresión:
 \begin{center}
   (/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash/B. \textbackslash/A. A -$>$ B) . b) 
 \end{center}
-Tenemos que b es una función polimorfica, al obtenga su forma en Term se va a tener lo siguiente
+Tenemos que b es una función polimorfica, al obtener su forma en Term se va a tener lo siguiente
 \begin{center}
-  ForAll (Lam (BoundForAll 0) (Lam (ForAllT (ForAllT (FunT (BoundForAll 0) (BoundForAll 1)))) (Bound 0)))
+  ForAll (Lam (BoundForAll 0) (Lam (ForAllT (Ty (ForAllT (Ty (FunT (BoundForAll 0) (BoundForAll 1)))))) (Bound 0)))
 \end{center}
 
 Donde se puede apreciar una cosa interesantes, se tiene un solo ForAll pero tenemos (BoundForAll 0) y (BoundForAll 1). Uno tendería a 
@@ -283,8 +341,14 @@ Es decir hay una distinción entre el ForAll y ForAllT al momento de usar variab
 los Term. Gráficamente seria:
 
 \begin{center}
-  \includegraphics[width=1\textwidth]{Imagenes/EjemploBoundForAllFunction.png}
+  \includegraphics[width=.8\textwidth]{Imagenes/EjemploBoundForAllFunction.png}
 \end{center}
+
+\noindent Otro ejmplo seria:
+\begin{center}
+  \includegraphics[width=.9\textwidth]{Imagenes/EjemploBoundForAllFunction2.png}
+\end{center}
+
 
 \subsubsection{Evaluación}
 Para la evaluación el interprete sigue el orden de reducción \textbf{call-by-value} en donde tenemos las siguientes reglas, las cuales 
@@ -380,7 +444,7 @@ Luego si se quiere evaluar una expresión del Sistema F, se la ingresa por tecla
 
 Una cosa a mencionar en el tema de los Bool es que si bien en la gramática el if aparece como \textbf{ifthenelse $t_1$ $t_2$ $t_3$} y 
 tanto en los LamTerm como en los Term también aparece asi, a la hora de escribirlo y mostrarlo por consola es 
-\textbf{if $t_1$ then $t_2$ else $t_3$}, este cambio se hizo por comodidad, es más común escribirlo como la segunda forma que como 
+\textbf{if $t_1$ then $t_2$ else $t_3$}, este cambio se hizo por comodidad y para que sea mas legible, es más común escribirlo como la segunda forma que como 
 la primera.\\
 
 Veamos ejemplos (estos ejemplos están en el archivo Ejemplos.txt para que puedan ser testeados sin problemas por el lector):

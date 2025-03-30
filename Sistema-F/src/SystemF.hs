@@ -15,8 +15,8 @@ toTerm f (LAbs name typee t) c = Lam (conversionType typee c) $ f t
 toTerm f (LApp t1 t2) _        = f t1 :@: f t2
 
 -- Sistema F
-toTerm f (LTAbs name t) _  = ForAll (f t)
-toTerm f (LTApp t typee) c = TApp (f t) (conversionType typee c) 
+toTerm f (LTAbs name t)  _ = ForAll (f t)
+toTerm f (LTApp t typee) c = TApp (f t) (conversionType typee c)
 
 -- Bool
 toTerm f LTrue _  = T
@@ -40,33 +40,60 @@ conversion :: LamTerm -> Term
 conversion = conversion' [] []
 
 conversion' :: [String] -> [String] -> LamTerm -> Term
-conversion' vars cuan (LVar name)                 = maybe (Free (Global name)) Bound (elemIndex name vars)
-conversion' vars cuan (LAbs name (VarT typee) t') = conversion' vars cuan (LAbs name (BoundForAll (elemIndex' typee cuan)) t')
-conversion' vars cuan t@(LAbs name _ _)           = toTerm (conversion' (name:vars) cuan) t cuan
-conversion' vars cuan t@(LTAbs name lamTerm)      = toTerm (conversion' vars (cuan ++ [name])) t cuan
-conversion' vars cuan t                           = toTerm (conversion' vars cuan) t cuan
+conversion' vars cuan (LVar name)            = maybe (Free (Global name)) Bound (elemIndex name vars)
+conversion' vars cuan t@(LAbs name _ _)      = toTerm (conversion' (name:vars) cuan) t cuan
+conversion' vars cuan t@(LTAbs name lamTerm) = toTerm (conversion' vars (cuan ++ [name])) t cuan
+conversion' vars cuan t                      = toTerm (conversion' vars cuan) t cuan
 
 ---------------------------------
--- La idea de esta función es realizar la instanciacion de tipo
-conversionType :: Type -> [String] -> Type
-conversionType (ForAllT t) cuant = conversionType' (ForAllT t) (conversionForAll [] t)
-conversionType t           cuant = conversionType' t cuant
+{-
+La idea de esta función es reemplazar los VarT en los tipos por los BoundForAll, pero voy a tener 2 posibilidades
+  1- El tipo es un ForAllT Ty, en donde los VarT que hay no son los mismo que en la expresión
+  2- El tipo no es un ForAllT Ty y los VarT depende de la expresión
 
+Para el segundo caso la idea es muy simple, se recorre el tipo y se cambian los VarT por los BoundForAll donde el Int es la ultima 
+posición del 'VarT' en una lista (Mas abajo se explica porque la ultima posición y no la primera)
+
+Para el primer caso es mas complicado, primero se busca y se arma un lista con todos los VarT que aparezcan (sin repetir) y a su vez se
+cuenta la cantidad de ForAllT Ty que había en la tipo. Si no coincide hay una variable sin cuantificar, si coincide se procede de la misma 
+forma que en el segundo caso.
+-}
+conversionType :: Type -> [String] -> Type
+conversionType (ForAllT (Ty t)) cuan = let (s, i) = conversionForAll [] (ForAllT (Ty t))
+                                       in case length s of 
+                                            i -> conversionType' (ForAllT (Ty t)) s
+                                            _ -> error "Variable no cuantificada"
+conversionType t cuan = conversionType' t cuan
+
+{-
+Aca es donde se hace el cambio de VarT a BoundForAll propiamente dicho. Hay que tener en cuenta que se puede tener una expresión del 
+tipo (Algo sin ForAllT Ty) -> (Algo con ForAllT Ty).
+Por esto hay que separa el caso del ForAllT Ty, asi busca los VarT correspondientes en la segunda expresión (que son propias de dicha 
+expresión).
+-}
 conversionType' :: Type -> [String] -> Type
-conversionType' (ForAllT t)  cuan = ForAllT (conversionType' t cuan)
+conversionType' (ForAllT (Ty t))  cuan = case cuan of 
+                                          [] -> conversionType (ForAllT (Ty t)) cuan
+                                          _  -> ForAllT (Ty (conversionType' t cuan))
 conversionType' (VarT typee) cuan = BoundForAll (elemIndex' typee cuan)
 conversionType' (FunT t1 t2) cuan = FunT (conversionType' t1 cuan) (conversionType' t2 cuan)
 conversionType' (ListT t)    cuan = ListT (conversionType' t cuan)
 conversionType' t            cuan = t
 
--- Esta funcion se encarga transformar a Term los elementos en un ForAllT (estos tienen la forma '\/' ... '.' ...)
-conversionForAll :: [String] -> Type -> [String]
-conversionForAll cuan (ForAllT t1) = conversionForAll cuan t1
-conversionForAll cuan (FunT t1 t2) =  let xs = conversionForAll cuan t1 
-                                          ys = conversionForAll cuan t2
-                                      in foldl (\zs x -> if x `elem` zs then zs else zs ++ [x]) xs ys -- Elimino elementos repetidos
-conversionForAll cuan (VarT typee) = [typee]
-conversionForAll cuan t            = []
+{-
+Esta función se encarga de buscar los VarT que aparecen en el Type, y cuenta la cantidad de veces que parecen los ForAllT Ty.
+Se devuelve un tupla con los VarT encontrados (sin repetición) y un numero que cuente la cantidad de ForAllT Ty que había 
+(La cantidad de VarT encontrados debe coincidir con el numero de ForAllT)
+-}
+conversionForAll :: [String] -> Type -> ([String], Int)
+conversionForAll cuan (ForAllT (Ty t1)) = let (s, i) = conversionForAll cuan t1
+                                          in (s, i+1)
+conversionForAll cuan (FunT t1 t2) = let (xs, i)  = conversionForAll cuan t1 
+                                         (ys, i') = conversionForAll cuan t2
+                                         l = foldl (\zs x -> if x `elem` zs then zs else zs ++ [x]) xs ys -- Elimino VarT repetidos
+                                     in (l, i+i')
+conversionForAll cuan (VarT typee) = ([typee], 0)
+conversionForAll cuan t            = ([], 0)
 
 elemIndex' :: String -> [String] -> Int
 elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (lastElemIndex n c)
@@ -76,7 +103,7 @@ Antes elemIndex' era:
 elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (elemIndex n c)
 
 El problema que surge es que como el Sistema F es un polimorfismo paramétrico, los 'para todos' pueden ocurrir en cualquier lugar, 
-entonces se se puede escribir algo de este tipo:
+entonces se puede escribir algo de este tipo:
 /\X. \x:X. /\X. \y:X. t
 
 Que baja nuestra definición de Sistema F, los dos '/\X.' son distintos, entonces para dar el correcto BoundForAll tenemos que buscar 
@@ -136,20 +163,23 @@ sus (t1 :@: t2) typee     = sus t1 typee :@: sus t2 typee
 sus (ForAll t) typee      = ForAll (sus t typee)
 sus (TApp t typee') typee = TApp (sus t typee) typee'
 
-sus (Rec t u v) typee     = Rec t (sus u typee) v
+sus (Rec  t u v) typee    = Rec t (sus u typee) v
 sus (RecL t u v) typee    = RecL (sus t typee) (sus u typee) (sus v typee)
 
 sus t _                   = t
 
--- Sustitución de tipos en 
--- Ademas de usarse en la funcion sus, se utiliza en la funcion infer'. Pero hay una diferencia,
--- En sus se debe ignorar el caso ForAllT, mientras que en infer no se debe ignorar este caso (esto se debe a como se manejan los
--- BoundForAll dentro de los ForAll y ForAllT). Para esta difernecia se usa un Bool, si es True es el caso del infer', si es False es 
--- el caso del sus.
+{-
+Esta funcion se encarga de reemplazar los BoundForAll por el tipo correspondiente.
+
+Ademas de usarse en la funcion sus, se utiliza en la funcion infer'. Pero hay una diferencia, en sus se debe ignorar el caso ForAllT Ty, 
+mientras que en infer no se debe ignorar este caso (esto es debido a la forma en la ques se manejan los BoundForAll dentro de los 
+ForAll y ForAllT Ty). Para marcar esta difernecia se usa un Bool, si es True es el caso del infer', si es False es el caso del sus.
+
+-}
 susType :: Type -> Type -> Bool -> Type
 susType (FunT t1 t2) typee b     = FunT (susType t1 typee b) (susType t2 typee b)
 susType (ListT t)    typee b     = ListT (susType t typee b)
-susType (ForAllT t)  typee True  = ForAllT (susType t typee True)
+susType (ForAllT (Ty t))  typee True  = ForAllT (Ty (susType t typee True))
 susType (BoundForAll k) typee _  = if k == 0 then typee else BoundForAll (k - 1)
 susType t _                   _  = t
 
@@ -285,11 +315,11 @@ infer' c e (t :@: u)  = checkIsFun (infer' c e t) >>= \(FunT t1 t2) -> match t1 
 infer' c e (Lam t u)  = infer' (t : c) e u >>= \tu -> ret $ FunT t tu
 
 -- Sistema F
-infer' c e (ForAll t)              = infer' c e t >>= \t' -> ret $ ForAllT t'
+infer' c e (ForAll t)              = infer' c e t >>= \t' -> ret $ ForAllT (Lambd t')
 infer' c e (TApp (ForAll t) typee) = infer' c e (sus t typee)
 infer' c e (TApp t typee)          = infer' c e t >>= \t' ->
                                               case t' of
-                                                ForAllT u -> ret $ susType u typee True
+                                                ForAllT (Ty u) -> ret $ susType u typee True
                                                 _ -> err "Aplicación a un termino no polimorfico"
 
 -- Bool
