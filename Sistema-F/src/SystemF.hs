@@ -60,50 +60,48 @@ conversion = conversion' [] []
 conversion' :: [String] -> [String] -> LamTerm -> Term
 conversion' vars cuan (LVar name)            = maybe (Free (Global name)) Bound (elemIndex name vars)
 conversion' vars cuan t@(LAbs name _ _)      = toTerm (conversion' (name:vars) cuan) t cuan
-conversion' vars cuan t@(LTAbs name lamTerm) = toTerm (conversion' vars (cuan ++ [name])) t cuan
+conversion' vars cuan t@(LTAbs name lamTerm) = toTerm (conversion' vars (name:cuan)) t cuan
 conversion' vars cuan t                      = toTerm (conversion' vars cuan) t cuan
 
 ------------------------------------------
 
 conversionType :: Type -> [String] -> Type
-conversionType t@(ForAllT (Ty _)) cuanOG = let (cuan, count) = conversionForAll cuan t
-                                           in (if length cuan == count then conversionType' t cuanOG cuan 
-                                                                       else conversionType' t cuanOG ((\\) cuan cuanOG))
+conversionType t@(ForAllT (Ty _)) cuanOG = let (cuan, count) = conversionForAll t
+                                               l  = length cuan
+                                               l' = length cuanOG
+                                               newCuan | l == count = cuan  -- No hay abstracciones de afurea
+                                                       | l' + count < l = error "Hay variables sin cuantificar" -- Hay mas variables cuantificadas que cuantificadores en la expresion hasta el momento
+                                                       | otherwise = (\\) cuan cuanOG -- Hay abstracciones de afurea
+                                           in conversionType' t cuanOG newCuan
+
 conversionType t cuanOG = conversionType' t cuanOG []
 
 ------------------------------------------
 
 conversionType' :: Type -> [String] -> [String] -> Type
-conversionType' t@(ForAllT (Ty u)) cuanOG cuan = case cuan of 
+conversionType' t@(ForAllT (Ty u)) cuanOG cuan = case cuan of
                                                    [] -> conversionType t cuanOG
                                                    _  -> ForAllT (Ty (conversionType' u cuanOG cuan))
-conversionType' (VarT typee) cuanOG cuan = case elemIndex typee cuan of                                -- Primero me fijo si es del tipo
-                                             Just x -> BoundForAll $ Inner x    
-                                             Nothing -> BoundForAll $ External (elemIndex' typee cuanOG) -- Luego trato de buscarlo fuera
+conversionType' (VarT typee) cuanOG cuan = BoundForAll $ maybe (External (elemIndex' typee cuanOG)) Inner (elemIndex typee cuan)
 conversionType' (FunT t1 t2) cuanOG cuan = FunT (conversionType' t1 cuanOG cuan) (conversionType' t2 cuanOG cuan)
 conversionType' (ListT t)    cuanOG cuan = ListT (conversionType' t cuanOG cuan)
 conversionType' t            cuanOG cuan = t
 
 ------------------------------------------
-conversionForAll :: [String] -> Type -> ([String], Int)
-conversionForAll cuan (ForAllT (Ty t1)) = let (s, i) = conversionForAll cuan t1
-                                          in (s, i+1)
-conversionForAll cuan (FunT t1 t2) = let (xs, i)  = conversionForAll cuan t1 
-                                         (ys, i') = conversionForAll cuan t2
-                                         l = uniqueAppend xs ys
-                                     in (l, i+i')
-conversionForAll cuan (VarT typee) = ([typee], 0)
-conversionForAll cuan t            = ([], 0)
+conversionForAll :: Type -> ([String], Int)
+conversionForAll (ForAllT (Ty t1)) = let (s, i) = conversionForAll t1
+                                     in (s, i+1)
+conversionForAll (FunT t1 t2) = let (xs, i)  = conversionForAll t1
+                                    (ys, i') = conversionForAll t2
+                                    l = uniqueAppend xs ys
+                                in (l, i+i')
+conversionForAll (VarT typee) = ([typee], 0)
+conversionForAll t            = ([], 0)
 
 ------------------------------------------
 
 elemIndex' :: String -> [String] -> Int
-elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (lastElemIndex n c)
-
-lastElemIndex :: Eq a => a -> [a] -> Maybe Int
-lastElemIndex x xs = case elemIndices x xs of
-                       [] -> Nothing
-                       l  -> Just (last l)
+elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (elemIndex n (reverse c))
 
 ------------------------------------------
 -- Sustituye una variable por un término en otro
@@ -208,7 +206,7 @@ eval nvs (TApp t typee) = let t' = eval nvs t
 -- Bool
 eval nvs T = VBool NTrue
 eval nvs F = VBool NFalse
-eval nvs (IfThenElse t1 t2 t3) = case eval nvs t1 of 
+eval nvs (IfThenElse t1 t2 t3) = case eval nvs t1 of
                                    VBool NTrue -> eval nvs t2
                                    VBool NFalse -> eval nvs t3
                                    val -> error $ "El termino " ++ show val ++ " no evalúa a un BoolVal"
@@ -231,7 +229,7 @@ eval nvs (Cons x xs) = let x' = eval nvs x
 eval nvs (RecL t1 t2 t3) = case eval nvs t3 of
                              VList VNil -> eval nvs t1
                              VList (VCons n lv) -> let n'  = quote $ n
-                                                       lv' = quote $ VList lv 
+                                                       lv' = quote $ VList lv
                                                    in eval nvs $ t2 :@: n' :@: lv' :@: RecL t1 t2 lv'
                              val -> error $ "Se esperaba un ListVal pero se recibió " ++ show val
 
@@ -283,7 +281,7 @@ checkIsFun e@(Right t) = case t of
 checkIsFunInRL :: Either String Type -> Either String Type
 checkIsFunInRL e@(Left _)  = e
 checkIsFunInRL e@(Right t) = case t of
-                               FunT u (FunT (ListT u') (FunT (ListT v) (ListT v'))) -> 
+                               FunT u (FunT (ListT u') (FunT (ListT v) (ListT v'))) ->
                                           if u == u' && v == v' then e else err "El tipo de la función en RL esta mal"
                                _ -> err "No es el tipo esperados para la operación RL"
 
@@ -291,7 +289,7 @@ checkIsFunInRL e@(Right t) = case t of
 -- De hacerlo devuelve la segunda componente, sino devuelve un error.
 singleMatch :: (Type, Either String Type) -> Either String Type -> Either String Type
 singleMatch _ e@(Left _) = e
-singleMatch (expected_type, rst) e@(Right t) | t == expected_type = rst 
+singleMatch (expected_type, rst) e@(Right t) | t == expected_type = rst
                                              | otherwise = matchError expected_type t
 
 ------------------------------------------
@@ -313,14 +311,14 @@ infer' c e (TApp t typee)          = infer' c e t >>= \t' ->
 -- Bool
 infer' c e T = ret BoolT
 infer' c e F = ret BoolT
-infer' c e (IfThenElse t1 t2 t3) = 
+infer' c e (IfThenElse t1 t2 t3) =
   infer' c e t2 >>= \tt2 ->
-    singleMatch (BoolT, match tt2 (infer' c e t3)) (infer' c e t1) >> ret tt2 
-                                                                            
+    singleMatch (BoolT, match tt2 (infer' c e t3)) (infer' c e t1) >> ret tt2
+
 -- Nat
 infer' c e Zero    = ret NatT
 infer' c e (Suc t) = match NatT $ infer' c e t
-infer' c e (Rec t1 t2 t3) = 
+infer' c e (Rec t1 t2 t3) =
   infer' c e t1 >>= \tt1 ->
     singleMatch (FunT tt1 (FunT NatT tt1), match NatT (infer' c e t3)) (infer' c e t2) >> ret tt1
 
@@ -328,9 +326,9 @@ infer' c e (Rec t1 t2 t3) =
 infer' c e Nil           = ret ListTEmpty
 infer' c e (Cons t1 Nil) = infer' c e t1 >>= \tt1 -> ret (ListT tt1)
 infer' c e (Cons t1 t2)  = infer' c e t1 >>= \tt1 -> match (ListT tt1) (infer' c e t2)
-infer' c e (RecL t1 t2 t3) = 
-  infer' c e t1 >>= \tt1 -> infer' c e t3 >>= \tt3 -> 
+infer' c e (RecL t1 t2 t3) =
+  infer' c e t1 >>= \tt1 -> infer' c e t3 >>= \tt3 ->
     case tt1 of
-      ListTEmpty -> checkIsFunInRL (infer' c e t2) >>= \(FunT t (FunT t' (FunT v v'))) -> match t' (ret tt3) >> ret v    
+      ListTEmpty -> checkIsFunInRL (infer' c e t2) >>= \(FunT t (FunT t' (FunT v v'))) -> match t' (ret tt3) >> ret v
       _ -> case tt3 of
               ListT t -> singleMatch (FunT t (FunT tt3 (FunT tt1 tt1)), ret tt3) (infer' c e t2) >> ret tt1

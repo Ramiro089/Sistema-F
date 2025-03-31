@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.9.10)  30 MAR 2025 08:42
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.9.10)  31 MAR 2025 11:09
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -852,90 +852,128 @@ Underfull \hbox (badness 10000) in paragraph at lines 156--159
 [3]
 
 [4]
-<Imagenes/EjemploBoundForAll.png, id=124, 558.28575pt x 531.1845pt>
+<Imagenes/EjemploBoundForAll.png, id=128, 558.28575pt x 531.1845pt>
 File: Imagenes/EjemploBoundForAll.png Graphic file (type png)
 <use Imagenes/EjemploBoundForAll.png>
 Package pdftex.def Info: Imagenes/EjemploBoundForAll.png  used on input line 232.
 (pdftex.def)             Requested size: 303.53267pt x 288.7968pt.
-LaTeX Font Info:    Trying to load font information for OMS+cmr on input line 240.
- (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/base\omscmr.fd
+
+
+[5]
+Underfull \hbox (badness 10000) in paragraph at lines 235--237
+
+ []
+
+LaTeX Font Info:    Trying to load font information for OMS+cmr on input line 242.
+(C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/base\omscmr.fd
 File: omscmr.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 240.
-
-
-[5 <./Imagenes/EjemploBoundForAll.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 298--301
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 302--305
-
- []
-
-
-
-[6]
-Underfull \hbox (badness 10000) in paragraph at lines 337--339
-
- []
-
-<Imagenes/EjemploBoundForAllFunction.png, id=137, 558.888pt x 220.4235pt>
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 242.
+<Imagenes/EjemploBoundForAllFunction.png, id=134, 558.888pt x 220.4235pt>
 File: Imagenes/EjemploBoundForAllFunction.png Graphic file (type png)
 <use Imagenes/EjemploBoundForAllFunction.png>
-Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction.png  used on input line 344.
+Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction.png  used on input line 248.
 (pdftex.def)             Requested size: 346.89731pt x 136.81586pt.
 
 
-[7]
-<Imagenes/EjemploBoundForAllFunction2.png, id=142, 807.61725pt x 223.43475pt>
-File: Imagenes/EjemploBoundForAllFunction2.png Graphic file (type png)
-<use Imagenes/EjemploBoundForAllFunction2.png>
-Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction2.png  used on input line 349.
-(pdftex.def)             Requested size: 390.25534pt x 107.97023pt.
+[6 <./Imagenes/EjemploBoundForAll.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 251--253
 
-Overfull \hbox (54.41504pt too wide) detected at line 361
-[] [] []
+ []
+
+<Imagenes/EjemploBoundForAllFunction3.png, id=141, 846.7635pt x 258.9675pt>
+File: Imagenes/EjemploBoundForAllFunction3.png Graphic file (type png)
+<use Imagenes/EjemploBoundForAllFunction3.png>
+Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction3.png  used on input line 258.
+(pdftex.def)             Requested size: 433.62pt x 132.61302pt.
+
+Overfull \hbox (29.3747pt too wide) in paragraph at lines 258--259
+ [] 
  []
 
 
-Overfull \hbox (65.85567pt too wide) detected at line 375
-[] [] []
+
+[7 <./Imagenes/EjemploBoundForAllFunction.png> <./Imagenes/EjemploBoundForAllFunction3.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 298--299
+
  []
 
 
 
-[8 <./Imagenes/EjemploBoundForAllFunction.png> <./Imagenes/EjemploBoundForAllFunction2.png>]
-Overfull \hbox (60.8218pt too wide) detected at line 404
-[] [] [] 
+[8]
+Underfull \hbox (badness 10000) in paragraph at lines 319--322
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 323--326
+
+ []
+
+
+Overfull \hbox (54.41504pt too wide) detected at line 356
+[] [] []
  []
 
 
 
 [9]
-Underfull \hbox (badness 10000) in paragraph at lines 442--444
-
+Overfull \hbox (65.85567pt too wide) detected at line 370
+[] [] []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 445--449
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 459--465
-
+Overfull \hbox (60.8218pt too wide) detected at line 399
+[] [] [] 
  []
 
 
 
 [10]
+Underfull \hbox (badness 10000) in paragraph at lines 428--430
 
-[11] (informe.bbl)
+ []
 
-[12] (informe.aux
+
+Underfull \hbox (badness 10000) in paragraph at lines 431--434
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 435--438
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 439--441
+
+ []
+
+
+
+[11]
+Underfull \hbox (badness 10000) in paragraph at lines 455--457
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 458--462
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 472--478
+
+ []
+
+
+
+[12]
+
+[13] (informe.bbl)
+
+[14] (informe.aux
 LaTeX Info: Redefining \. on input line 11.
 LaTeX Info: Redefining \% on input line 11.
 )
@@ -944,20 +982,20 @@ LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-08-16>
  ***********
 Package rerunfilecheck Info: File `informe.out' has not changed.
-(rerunfilecheck)             Checksum: 481E25D99DE37E20909A060AA3E842FC;3164.
+(rerunfilecheck)             Checksum: 825FCAC78B9D569D13C389603FDDBBFF;3448.
  ) 
 Here is how much of TeX's memory you used:
- 37139 strings out of 473899
- 789678 string characters out of 5726028
+ 37150 strings out of 473899
+ 789815 string characters out of 5726028
  1949960 words of memory out of 5000000
- 59476 multiletter control sequences out of 15000+600000
+ 59484 multiletter control sequences out of 15000+600000
  572601 words of font info for 89 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  121i,8n,138p,1668b,2518s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\Ramiro\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1200.pk><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on informe.pdf (13 pages, 376595 bytes).
+Output written on informe.pdf (15 pages, 415708 bytes).
 PDF statistics:
- 234 PDF objects out of 1000 (max. 8388607)
- 40 named destinations out of 1000 (max. 500000)
- 192 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 247 PDF objects out of 1000 (max. 8388607)
+ 43 named destinations out of 1000 (max. 500000)
+ 200 words of extra memory for PDF output out of 10000 (max. 10000000)
 

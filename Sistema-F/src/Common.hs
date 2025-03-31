@@ -35,15 +35,15 @@ data Type = EmptyT
 data Pos = External Int | Inner Int deriving (Show)
 instance Eq Pos where
   External t1 == Inner t2    = t1 == t2
-  Inner t1 == External t2    = t1 == t2
+  Inner t1    == External t2 = t1 == t2
   External t1 == External t2 = t1 == t2
-  Inner t1 == Inner t2       = t1 == t2
+  Inner t1    == Inner t2    = t1 == t2
 
 data Fat = Lambd Type | Ty Type deriving (Show)
 instance Eq Fat where
-    Ty t1 == Lambd t2    = t1 == t2
+    Ty t1    == Lambd t2 = t1 == t2
     Lambd t1 == Ty t2    = t1 == t2
-    Ty t1 == Ty t2       = t1 == t2
+    Ty t1    == Ty t2    = t1 == t2
     Lambd t1 == Lambd t2 = t1 == t2
 
 -- Términos con nombres
