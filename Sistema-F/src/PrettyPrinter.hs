@@ -145,7 +145,7 @@ printTypeAux NatT   _ _ _ = text "Nat"
 printTypeAux EmptyT _ _ _ = text "E"
 
 -- Funcion
-printTypeAux (FunT t1 t2) n cuanInter cuanExter = sep [parensIf (isFun t1) (printTypeAux t1 n cuanInter cuanExter), text "->", printTypeAux t2 n cuanInter cuanExter]
+printTypeAux (FunT t1 t2) n cuanInter cuanExter = sep [parensIf (isFun t1) (printTypeAux t1 n cuanInter cuanExter), text "->", parensIf (isFun t2) (printTypeAux t2 n cuanInter cuanExter)]
 
 -- List
 printTypeAux (ListT t)  n cuanInter cuanExter = text "List " <> parensIf (inList t) (printTypeAux t n cuanInter cuanExter)

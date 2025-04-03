@@ -11,23 +11,7 @@ import           PrettyPrinter
 import           Common
 
 
--- Costo O(n + m log m)
-uniqueAppend :: (Ord a) => [a] -> [a] -> [a]
-uniqueAppend xs ys = xs ++ aux (Set.fromList xs) ys
-  where
-    aux _ [] = []
-    aux seen (y:ys) | y `Set.member` seen = aux seen ys
-                    | otherwise = y : aux (Set.insert y seen) ys
-
--- Redefino la función (\\) de Data.List, para que su complejidad sea menor
--- Originalmente seria O(n*m) pero de esta forma es O(n log m)
-(\\) :: (Ord a) => [a] -> [a] -> [a]
-xs \\ ys = let setYs = Set.fromList ys
-           in filter (`Set.notMember` setYs) xs
-
-------------------------------------------------
-
--- Convierte un LamTerm a un Term, aplicando una función de conversion
+-- Convierte un LamTerm a un Term, aplicando una funcion de conversion
 toTerm:: (LamTerm -> Term) -> LamTerm -> [String] -> Term
 toTerm f (LAbs name typee t) c = Lam (conversionType typee c) $ f t
 toTerm f (LApp t1 t2) _        = f t1 :@: f t2
@@ -65,13 +49,14 @@ conversion' vars cuan t                      = toTerm (conversion' vars cuan) t 
 
 ------------------------------------------
 
+-- La idea de esta función es reemplazar los VarT en los tipos por los BoundForAll,
 conversionType :: Type -> [String] -> Type
 conversionType t@(ForAllT (Ty _)) cuanOG = let (cuan, count) = conversionForAll t
                                                l  = length cuan
                                                l' = length cuanOG
-                                               newCuan | l == count = cuan  -- No hay abstracciones de afurea
-                                                       | l' + count < l = error "Hay variables sin cuantificar" -- Hay mas variables cuantificadas que cuantificadores en la expresion hasta el momento
-                                                       | otherwise = (\\) cuan cuanOG -- Hay abstracciones de afurea
+                                               newCuan | l == count = cuan  -- "No hay" abstracciones de afurea
+                                                       | l' + count < l = error "Hay variables sin cuantificar" -- Hay mas variables cuantificadas que cuantificadores en la expresión hasta el momento
+                                                       | otherwise = (\\) cuan cuanOG -- Hay abstracciones de afuera
                                            in conversionType' t cuanOG newCuan
 
 conversionType t cuanOG = conversionType' t cuanOG []
@@ -88,23 +73,48 @@ conversionType' (ListT t)    cuanOG cuan = ListT (conversionType' t cuanOG cuan)
 conversionType' t            cuanOG cuan = t
 
 ------------------------------------------
+
+{-
+Esta función se encarga de buscar los "N" de los (VarT "N") que aparecen en el Type, y cuenta la cantidad de veces que parecen los (ForAllT Ty).
+Se devuelve un tupla con los "N" encontrados (sin repetición) y el numero de ForAllT Ty que había.
+-}
 conversionForAll :: Type -> ([String], Int)
 conversionForAll (ForAllT (Ty t1)) = let (s, i) = conversionForAll t1
                                      in (s, i+1)
-conversionForAll (FunT t1 t2) = let (xs, i)  = conversionForAll t1
-                                    (ys, i') = conversionForAll t2
-                                    l = uniqueAppend xs ys
-                                in (l, i+i')
-conversionForAll (VarT typee) = ([typee], 0)
-conversionForAll t            = ([], 0)
+conversionForAll (FunT t1 t2)      = let (xs, i)  = conversionForAll t1
+                                         (ys, i') = conversionForAll t2
+                                         l = uniqueAppend xs ys
+                                     in (l, i+i')
+conversionForAll (VarT x)          = ([x], 0)
+conversionForAll t                 = ([], 0)
 
 ------------------------------------------
 
 elemIndex' :: String -> [String] -> Int
-elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (elemIndex n (reverse c))
+elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (lastElemIndex n (reverse c))
+-- Se puede sacar el reverse si se escribe: 
+--      conversion' vars cuan t@(LTAbs name lamTerm) = toTerm (conversion' vars (cuan ++ [name])) t cuan
+-- En lugar de: 
+--      conversion' vars cuan t@(LTAbs name lamTerm) = toTerm (conversion' vars (name:cuan)) t cuan
+
+lastElemIndex :: Eq a => a -> [a] -> Maybe Int
+lastElemIndex x xs = case elemIndices x xs of
+                       [] -> Nothing
+                       l  -> Just (last l)
+{-
+Antes elemIndex' era:
+elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (elemIndex n c)
+
+El problema que surge es que como el Sistema F es un polimorfismo paramétrico, los 'para todos' pueden ocurrir en cualquier lugar, 
+entonces se puede escribir algo de este tipo:
+/\X. \x:X. /\X. \y:X. t
+
+Que baja nuestra definición de Sistema F, los dos '/\X.' son distintos, entonces para dar el correcto BoundForAll tenemos que buscar 
+la ultima ocurrencia de 'X' en la lista de los cuantificadores (cuantOG).
+-}
 
 ------------------------------------------
--- Sustituye una variable por un término en otro
+-- Sustituye una variable por un termino en otro
 sub :: Int -> Term -> Term -> Term
 sub i t (Bound j) | i == j    = t
                   | otherwise = Bound j
@@ -144,22 +154,22 @@ sub i t (RecL u v w) = let u' = sub i t u
 sus :: Term -> Type -> Term
 sus (Lam t u) typee       = Lam (susType t typee False) (sus u typee)
 sus (t1 :@: t2) typee     = sus t1 typee :@: sus t2 typee
+
 -- Sistema F
 sus (ForAll t) typee      = ForAll (sus t typee)
 sus (TApp t typee') typee = TApp (sus t typee) typee'
+
 -- Casos Recursivos
 sus (Rec  t u v) typee    = Rec t (sus u typee) v
 sus (RecL t u v) typee    = RecL (sus t typee) (sus u typee) (sus v typee)
+
 -- Cualquier Otro
 sus t _                   = t
 
 {-
-Esta funcion se encarga de reemplazar los BoundForAll por el tipo correspondiente.
-
-Ademas de usarse en la funcion sus, se utiliza en la funcion infer'. Pero hay una diferencia, en sus se debe ignorar el caso ForAllT Ty, 
-mientras que en infer no se debe ignorar este caso (esto es debido a la forma en la ques se manejan los BoundForAll dentro de los 
-ForAll y ForAllT Ty). Para marcar esta difernecia se usa un Bool, si es True es el caso del infer', si es False es el caso del sus.
-
+Esta función se encarga de reemplazar los (BoundForAll Pos) por el tipo correspondiente.
+Se utiliza en la funcion sus y en la funcion infer. Pero hay una diferencia, en sus no se debe entrar al caso de BoundForAll (Inner _ ),
+en infer si debe. Para esto se utiliza un Bool, que indica el caso.
 -}
 susType :: Type -> Type -> Bool -> Type
 susType (FunT t1 t2)     typee b = FunT (susType t1 typee b) (susType t2 typee b)
@@ -169,7 +179,7 @@ susType (BoundForAll (External k)) typee _ = if k == 0 then typee else BoundForA
 susType (BoundForAll (Inner k)) typee True = if k == 0 then typee else BoundForAll $ Inner (k - 1)
 susType t _ _                              = t
 
--- Convierte valor a un término equivalente
+-- Convierte valor a un termino equivalente
 quote :: Value -> Term
 quote (VLam t f) = Lam t f
 
@@ -188,7 +198,7 @@ quote (VNum (NSuc n)) = Suc $ quote $ VNum n
 quote (VList VNil) = Nil
 quote (VList (VCons x xs)) = Cons (quote x) (quote (VList xs))
 
--- Evalúa un término en un entorno dado
+-- Evalua un termino en un entorno dado
 eval :: NameEnv Value Type -> Term -> Value
 eval nvs (Free n)    = fst $ fromJust (lookup n nvs)
 eval nvs (Lam t u)   = VLam t u
@@ -201,25 +211,25 @@ eval nvs (ForAll t)     = VForAll t
 eval nvs (TApp t typee) = let t' = eval nvs t
                           in case t' of
                                VForAll u -> eval nvs (sus u typee)
-                               _         -> error $ "El termino dentro de la aplicación " ++ show t' ++ " no evalúa a un VForAll"
+                               _         -> error $ "El termino dentro de la aplicacion " ++ show t' ++ " no evalua a un VForAll"
 
 -- Bool
 eval nvs T = VBool NTrue
 eval nvs F = VBool NFalse
 eval nvs (IfThenElse t1 t2 t3) = case eval nvs t1 of
-                                   VBool NTrue -> eval nvs t2
+                                   VBool NTrue  -> eval nvs t2
                                    VBool NFalse -> eval nvs t3
-                                   val -> error $ "El termino " ++ show val ++ " no evalúa a un BoolVal"
+                                   val -> error $ "El termino " ++ show val ++ " no evalua a un BoolVal"
 
 -- Nat
 eval nvs Zero    = VNum NZero
 eval nvs (Suc n) = let (VNum n') = eval nvs n
                    in VNum $ NSuc n'
 eval nvs (Rec t1 t2 t3) = case eval nvs t3 of
-                            VNum NZero -> eval nvs t1
+                            VNum NZero    -> eval nvs t1
                             VNum (NSuc t) ->  let t' = quote $ VNum t
                                               in eval nvs $ t2 :@: Rec t1 t2 t' :@: t'
-                            val -> error $ "Se esperaba un NumVal pero se recibió " ++ show val
+                            val -> error $ "Se esperaba un NumVal pero se recibio " ++ show val
 
 -- Lista
 eval nvs Nil         = VList VNil
@@ -227,11 +237,11 @@ eval nvs (Cons x xs) = let x' = eval nvs x
                            (VList xs') = eval nvs xs
                        in VList $ VCons x' xs'
 eval nvs (RecL t1 t2 t3) = case eval nvs t3 of
-                             VList VNil -> eval nvs t1
+                             VList VNil         -> eval nvs t1
                              VList (VCons n lv) -> let n'  = quote $ n
                                                        lv' = quote $ VList lv
                                                    in eval nvs $ t2 :@: n' :@: lv' :@: RecL t1 t2 lv'
-                             val -> error $ "Se esperaba un ListVal pero se recibió " ++ show val
+                             val -> error $ "Se esperaba un ListVal pero se recibio " ++ show val
 
 -- Expresión incorrecta
 eval _ t = error $ "No se puede convertir el termino " ++ show t ++ " a un valor"
@@ -258,7 +268,9 @@ notfoundError n = err $ show n ++ " no está definida."
 
 -- Imprime que los Type no coinciden
 matchError :: Type -> Type -> Either String Type
-matchError t1 t2 = err $ "se esperaba " ++ render (printType t1) ++ ", pero " ++ render (printType t2) ++ " fue inferido."
+matchError t1 t2 = err $ "se esperaba " ++ t1' ++ ", pero " ++ t2' ++ " fue inferido."
+  where t1' = render (printType t1)
+        t2' = render (printType t2)
 
 -- Recibe un Type y un error o Type, si es el error lo devuelve, si no se fija que los Type coincidan
 match :: Type -> Either String Type -> Either String Type
@@ -270,19 +282,19 @@ match expected_type e@(Right t) | expected_type == t = e
     isList (ListT _) = True
     isList _         = False
 
--- Chequea que el Type sea una función
+-- Chequea que el Type sea una funcion
 checkIsFun :: Either String Type -> Either String Type
 checkIsFun e@(Left _)  = e
 checkIsFun e@(Right t) = case t of
                            FunT t1 t2 -> e
                            _ -> notfunError t
 
--- Chequea que el Type sea una función usada en la recursion de lista
+-- Chequea que el Type sea una funcion usada en la recursion de lista
 checkIsFunInRL :: Either String Type -> Either String Type
 checkIsFunInRL e@(Left _)  = e
 checkIsFunInRL e@(Right t) = case t of
                                FunT u (FunT (ListT u') (FunT (ListT v) (ListT v'))) ->
-                                          if u == u' && v == v' then e else err "El tipo de la función en RL esta mal"
+                                          if u == u' && v == v' then e else err "El tipo de la funcion en RL no es correcto"
                                _ -> err "No es el tipo esperados para la operación RL"
 
 -- Dado un tupla y un Type, se fija que la primer componente coincida con el Type
@@ -292,21 +304,39 @@ singleMatch _ e@(Left _) = e
 singleMatch (expected_type, rst) e@(Right t) | t == expected_type = rst
                                              | otherwise = matchError expected_type t
 
+
+-- En un inicio la había pensado como:
+-- uniqueAppend xs ys = foldl (\zs x -> if x `elem` zs then zs else zs ++ [x]) xs ys 
+-- Pero era O(n*m), de esta forma es O((n + m) log n)
+uniqueAppend :: (Ord a) => [a] -> [a] -> [a]
+uniqueAppend xs ys = xs ++ aux (Set.fromList xs) ys
+  where
+    aux _ [] = []
+    aux xs (y:ys) | y `Set.member` xs = aux xs ys
+                  | otherwise = y : aux (Set.insert y xs) ys
+
+-- Redefino la función (\\) de Data.List, para que su complejidad sea menor
+-- Originalmente seria O(n*m) pero de esta forma es O((n + m) log m)
+(\\) :: (Ord a) => [a] -> [a] -> [a]
+xs \\ ys = let setYs = Set.fromList ys
+           in filter (`Set.notMember` setYs) xs
+
 ------------------------------------------
 
 infer' :: Context -> NameEnv Value Type -> Term -> Either String Type
-infer' c _  (Bound i) = ret (c !! i)
-infer' _  e (Free  n) = maybe (notfoundError n) (ret . snd) (lookup n e)
-infer' c e (t :@: u)  = checkIsFun (infer' c e t) >>= \(FunT t1 t2) -> match t1 (infer' c e u) >> ret t2
-infer' c e (Lam t u)  = infer' (t : c) e u >>= \tu -> ret $ FunT t tu
+infer' c _ (Bound i) = ret (c !! i)
+infer' _ e (Free  n) = maybe (notfoundError n) (ret . snd) (lookup n e)
+infer' c e (t :@: u) = checkIsFun (infer' c e t) >>= \(FunT t1 t2) -> match t1 (infer' c e u) >> ret t2
+infer' c e (Lam t u) = infer' (t : c) e u >>= \tu -> ret $ FunT t tu
 
 -- Sistema F
 infer' c e (ForAll t)              = infer' c e t >>= \t' -> ret $ ForAllT (Lambd t')
 infer' c e (TApp (ForAll t) typee) = infer' c e (sus t typee)
 infer' c e (TApp t typee)          = infer' c e t >>= \t' ->
                                               case t' of
-                                                ForAllT (Ty u) -> ret $ susType u typee True
-                                                _ -> err "Aplicación a un termino no polimorfico"
+                                                ForAllT (Ty u)    -> ret $ susType u typee True
+                                                ForAllT (Lambd u) -> ret $ susType u typee False
+                                                _ -> err $ "Esta expresion " ++ show t ++ " no esta cuantificada" 
 
 -- Bool
 infer' c e T = ret BoolT
@@ -324,7 +354,7 @@ infer' c e (Rec t1 t2 t3) =
 
 -- List
 infer' c e Nil           = ret ListTEmpty
-infer' c e (Cons t1 Nil) = infer' c e t1 >>= \tt1 -> ret (ListT tt1)
+--infer' c e (Cons t1 Nil) = infer' c e t1 >>= \tt1 -> ret (ListT tt1)
 infer' c e (Cons t1 t2)  = infer' c e t1 >>= \tt1 -> match (ListT tt1) (infer' c e t2)
 infer' c e (RecL t1 t2 t3) =
   infer' c e t1 >>= \tt1 -> infer' c e t3 >>= \tt3 ->

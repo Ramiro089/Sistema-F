@@ -17,3 +17,5 @@ Mas ejemplos
 /\X. \x:X. /\Y. \y:Y. y
 
 (/\A. \a:A. \b:(\/B. \/A. B -> A -> A). /\C. \c:C. \f:(\/B. \/A. B -> A -> A). b)
+
+/\X. \x:X -> (\/Y. X -> Y). x
