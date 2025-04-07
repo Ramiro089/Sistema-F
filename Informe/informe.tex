@@ -168,8 +168,7 @@ En este podemos distinguir 2 función importantes:
 
 \subsubsection{SystemF.hs}
 En este archivo es donde se implementan las funciones de evaluación y el chequeador de tipo (además de unas cuantas funciones auxiliares 
-para el correcto funcionamiento. Más adelante en el informe se explica una de estas funciones, llamada conversionType, la cual puede 
-resultar complicada de entender).
+para el correcto funcionamiento).
 
 \section{Decisiones de diseño importantes}
 \subsection{Representación del Sistema F}
@@ -196,19 +195,25 @@ Como se menciono anteriormente, la implementación de estos se encuentra en el a
               | ListT Type
               deriving (Show, Eq)
 
-data Pos = External Int | Inner Int deriving (Show)
-instance Eq Pos where
-  External t1 == Inner t2    = t1 == t2
-  Inner t1    == External t2 = t1 == t2
-  External t1 == External t2 = t1 == t2
-  Inner t1    == Inner t2    = t1 == t2
-
-data Fat = Lambd Type | Ty Type deriving (Show)
-instance Eq Fat where
-    Ty t1    == Lambd t2 = t1 == t2
-    Lambd t1 == Ty t2    = t1 == t2
-    Ty t1    == Ty t2    = t1 == t2
-    Lambd t1 == Lambd t2 = t1 == t2
+    data Pos = External Int | Inner Int deriving (Show)
+    instance Eq Pos where
+      External t1 == Inner t2    = t1 == t2
+      Inner t1    == External t2 = t1 == t2
+      External t1 == External t2 = t1 == t2
+      Inner t1    == Inner t2    = t1 == t2
+    
+      data Fat = Lambd Type | Lt String Type | Ty Type deriving (Show)
+      instance Eq Fat where
+          Ty  t1   == Lambd t2 = t1 == t2
+          Lambd t1 == Ty  t2   = t1 == t2
+          Lt _ t1  == Lambd t2 = t1 == t2
+          Lambd t1 == Lt _ t2  = t1 == t2
+          Ty t1    == Lt _ t2  = t1 == t2
+          Lt _ t1  == Ty t2    = t1 == t2
+      
+          Lt s t1  == Lt s' t2 = s == s' && t1 == t2 
+          Ty t1    == Ty  t2   = t1 == t2
+          Lambd t1 == Lambd t2 = t1 == t2
 \end{verbatim}
 
 De esta definición se pueden ver muchas cosas, asi que vayamos por parte. Empecemos con la declaración del Type, esta se basa en la gramática del Sistema F, pero 
@@ -218,10 +223,10 @@ posee '2' elementos de más, los cuales son:
   \item {\textbf{ListTEmpty}\\
   Como se van a poder usar listas de todo tipo surge un problema a la hora de usar una lista vacía, ya que se debería especificar el tipo, 
   a pesar de estar vacía. 
-  Para evitar y simplificar esto lo que decidió fue darle un tipo especial a la lista vacía, \textbf{ListTEmpty}, de esta forma se evita 
+  Para evitar complicaciones y simplificar esto, lo que decidió fue darle un tipo especial a la lista vacía, \textbf{ListTEmpty}, de esta forma se evita 
   tener que darle un tipo especifico.
   
-  Teniéndose que agregar un caso para lista vacía en las funciones que pueden recibir una como argumento (como infer' o match)
+  Teniéndose que agregar un caso 'especial' para lista vacía en las funciones que pueden recibir una como argumento (como infer' o match)
   }
 
   \item {\textbf{BoundForAll}\\
@@ -233,7 +238,8 @@ posee '2' elementos de más, los cuales son:
       \includegraphics[width=0.7\textwidth]{Imagenes/EjemploBoundForAll.png}
   \end{center}
 
-  En un inicio la idea era poner (BoundForAll Int) con los Term (como el Bound que esta en Term), pero como esta idea esta relacionada con 
+  Es decir que solo se almacene el \textbf{para todo} al cual esta ligado. 
+  Al principio la idea era poner (BoundForAll Int) con los Term (como el Bound que esta en Term), pero como esta idea esta relacionada con 
   los tipos resulto más practico agregarlo aca.\\
   
   Pero a medida que se fue avanzando con el Proyecto la idea de usar solo algo de la forma (BoundForAll Int) resulto insuficiente, ya que podría ocurrir algo 
@@ -250,11 +256,11 @@ posee '2' elementos de más, los cuales son:
     \includegraphics[width=.8\textwidth]{Imagenes/EjemploBoundForAllFunction.png}
   \end{center}
 
-  Donde se puede apreciar una cosa interesantes, se tiene un solo ForAll pero tenemos (BoundForAll 0) y (BoundForAll 1). Uno tendería a 
+  Donde se puede apreciar que se tiene un solo ForAll pero tenemos (BoundForAll 0) y (BoundForAll 1). Uno tendería a 
   pensar que esto es un error, pero no lo es ya que estos BoundForAll no están 'ligados' al $\Lambda$ sino al $\forall$.\\
 
   Debido a esto surge la necesidad de poder distinguir cuando un BoundForAll esta 'dentro' o 'afuera'. 
-  Entonces para indicara a que están ligados se usa el tipo Pos, donde External y Inner indican a que $\Lambda$ y a que $\forall$ esta 
+  Entonces para indicara a cual esta ligado un a variable se introduce el tipo Pos, donde External y Inner indican a que $\Lambda$ y a que $\forall$ esta 
   ligado respectivamente. 
   Una cuestión es que los External son 'globales' y los Inner 'locales', usemos este ejemplo para ilustrar esto:
 
@@ -262,46 +268,51 @@ posee '2' elementos de más, los cuales son:
     \includegraphics[width=1\textwidth]{Imagenes/EjemploBoundForAllFunction3.png}
   \end{center}
 
-  En donde el Int que posee el External de $\Lambda$C. se respeta en todos lados, mientras el $\forall$A. se tiene en b con (Inner 1) y en c con (Inner 0). Es decir, 
-  el Inner depende del tipo actual, mientras que el External es el mismo sin importar donde este.
+  En donde el Int que posee el External de $\Lambda$C. se respeta en todos lados, mientras que el $\forall$A. se tiene en b con (Inner 1) y en c con (Inner 0). 
+  Es decir, el Inner depende del tipo actual, mientras que el External es el mismo sin importar donde este.
 
   Además, hay que tener en cuenta una cosa más, los dos tipos de Pos deben ser iguales entre si, para que se pueda hacer este tipo 
   de sustitución.
   
   \begin{center}
-    (\textbackslash x:(\textbackslash/Y. Y -$>$ Y). x) (/\textbackslash X. \textbackslash x:X. x)
+    ($\lambda$x: ($\forall$Y. Y $\rightarrow$ Y). x) ($\Lambda$X. $\lambda$x:X. x)
   \end{center} 
 
   Ya que en la primera el tipo de x seria algo del estilo, (BoundForAll (Inner 0)) -$>$ (BoundForAll (Inner 0)). Mientras que en la segunda expresión seria 
   de tipo (BoundForAll (External 0)) -$>$ (BoundForAll (External 0)). Por lo que la única forma de poder hacer la sustitución es que Externa e Inner sean iguales (Esto 
   se logra definiendo 'manualmente' el Eq de Pos). \\
 
-  Otra razon para distinguir entre Inner y External es cuando se realize una aplicación de la forma,
+  Otra razón para distinguir entre Inner y External es cuando se realize una aplicación de la forma,
   \begin{center}
-    /\textbackslash X. t $<$TipoNuevo$>$
+    $\Lambda$X. t $<$TipoNuevo$>$
   \end{center} 
    asi al reemplazar se reemplazaría los BoundForAll (External k) y no los Inner (lo cual estaría mal).
   }
   \end{itemize}
 
-  Una decision de diseño importante fue el \textbf{ForAllT Fat}, la idea del tipo \textbf{Fat} es la de distinguir el 
-  '$\Lambda$' y el '$\forall$' en las expresiones a la hora de imprimir por pantalla, pero que a la vez 
-  sean iguales para poder realizar la aplicación. Usemos un ejemplo para ilustrar esto, tenemos la siguiente expresión:
-
-  \begin{center}
-    (/\textbackslash X. \textbackslash x:X. /\textbackslash Y. \textbackslash y:Y. y).
-  \end{center} 
-
-  El printType no pude distinguir que variable cuantificada va en cada '$\Lambda$', ya que no se guarda ningún 
-  nombre en esta. Para esto se lleva un contador, 
-  el cual controla la cantidad de '$\forall$' que aparecen en la expresión. Ahora, si no se hiciese la distinción 
-  del \textbf{Fat}, en expresiones como la siguiente 
+  Una decision de diseño importante fue el \textbf{ForAllT Fat}, en un inicio la idea del tipo \textbf{Fat} era tener solo 2 
+  constructores los cuales eran el \textbf{Lambd Type} y el \textbf{Ty Type}, los cuales servían para distinguir el 
+  '$\Lambda$' y el '$\forall$' en las expresiones a la hora de imprimir por pantalla. \textbf{Lambd} aparece solo cuando se quiere ver el tipo de 
+  la expresión, \textbf{Ty} se utiliza en el tipo de las variables (osea esta siempre en la expresión). Si no se hiciese la distinción entre \textbf{Lambd} y  \textbf{Ty}, al querer imprimir tipos como:
 
   \begin{center}
     ($\Lambda$A. $\lambda$a:A. $\lambda$b:($\forall$B. B -$>$ B). b)
   \end{center}  
 
-  también se estaría teniendo en cuenta los '$\forall$' al momento de contar, lo que estaría mal.\\
+  se producirían incongruencias, ya que no se puede distingue entre '$\Lambda$' y el '$\forall$'. Al agregar el tipo \textbf{Fat} se puede 
+  hacer esta distinción  y se evita el problema.\\
+
+  Todavía hay un problema importante con los tipo si al \textbf{Fat} se lo deja solo con esos 2 constructores, hay problemas al momento de parsear 
+  expresiones como,
+
+  \begin{center}
+    ($\lambda$x:($\forall$X. $\forall$Y. $\forall$Z. X -$>$ Z -$>$ Z). x)
+  \end{center}  
+
+  es decir, el tipo posee mas $\forall$ de los que se utiliza. Para solucionarlo se agrega el tipo \textbf{Lt String Type}. Lo que se hace es que 
+  al momento de parsear la expresión entrante se utiliza el \textbf{Lt} para los $\forall$ de los tipos, y luego cuando se hace la conversion de 
+  LamTerm a Term, se realiza el reemplazo por \textbf{Ty}, asi me evito almacenar el string.\\
+
 
 \noindent Para las expresiones del lambda calculo se tiene:
 \begin{verbatim}
@@ -430,50 +441,6 @@ Al igual que en el TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} se va a utilizar
 pantalla. En el archivo
 \textbf{src/PrettyPrinter.hs} es donde se implementa el \textbf{pretty printing} para el sistema F.
 
-\subsection{Explicación de la función conversionType}
-Decidí que era importante explicar como se comporta esta función ya que, fue la que más me costo de pensar y es una de las mas complejas del código.
-La idea de esta función es transformar los (VarT X) que aparecen en los tipos por su respectiva forma (BoundForAll Pos), el resto de los tipos se 
-quedan igual. Para esto hay que tener en cuenta unos cuantos factores, como las  
-abstracciones afuera del tipo y las de adentro. \\
-
-Para las abstracciones de afuera se pasa una lista con todas ellas, creada en el momento de pasar de LamTerm a Term.
-El problema aparece al buscar las de adentro, ya que al formar un la lista de (VarT) estos pueden hacer referencia, tanto a las abstracciones de afuera como a las 
-de adentro lo que dificulta la tarea. Además, no se puede hacer como las abstracciones de afuera, que al momento de tener algo de la forma 
-(LTAbs name LamTerm) se arma una lista con los name's, ya que en los tipo no hay nombre para los $\forall$, son de la forma  (ForAll (Ty)), 
-lo cual complica la búsqueda.\\  
-
-Entonces lo que se hace es, si el tipo tiene la forma (ForAllT (Ty )) se almacenan las "N" de los (VarT "N"), sin que se repitan y luego se compara 
-la cantidad de (ForAllT (Ty )) y la de (VarT "N") distintos encontradas. De esta toda esta parte se hace cargo la función conversionForAll. \\
-
-Aca es donde se complica un poco la cosa, una vez realiza la función conversionForAll hay que fijarse si dentro de la nueva lista que junta los "VarT" encontrados 
-hay alguno de afuera, y sacarlo de esta para que no genere problemas (tanto los de afuera como los de adentro son de tipo VarT). 
-Podemos distinguir 2 casos:
-
-\begin{itemize}%[label=$\bullet$]
-  \item {Si la cantidad de (ForAllT (Ty )) dentro coincide con la cantidad de (VarT) encontrados no hay problema. \\
-  Aca tenemos una especie de asunción importante, puede pasar que en la expresión pasada 
-  los nombres de los $\forall$X. no coincidan con los nombres de las variables dentro (Ej: 
-  (\textbackslash/X. \textbackslash/Y. A -$>$ B)) o que se llamen igual que las que se están usando a fuera 
-  (Ej: /\textbackslash X. \textbackslash x:(\textbackslash/X. X -$>$ X). x). 
-  En estos casos se interpreta que los nombre en los $\forall$X. están mal e interpreta que deben ir los de adentro. 
-  %En estos casos se toma como correcta la expresión, por tener la cantidad correcta de $\forall$ y variables distintas cuantificadas
-  }
-
-  \item {Si se tiene que no coincide es debido a 2 posibles casos, 
-        \begin{itemize}
-          \item {Se usen cuantificadores de afuera}
-          \item {Esta mal el tipo y hay variables cuantificadas de más}
-        \end{itemize}
-  Para verificar esto tenemos que ver si la cantidad de variables encontradas es menor o igual que la suma de los cuantificadores de afuera 
-  (encontrados hasta ese momento) y los de adentro. 
-  Si esto no se cumple se genera un error (hay variables cuantificadas de más), si se cumple hay que sacar de la lista la de los cuantificadores de afuera.
-  }
-\end{itemize}
-
-Una vez hecho esto se empieza con el reemplazo de los tipos en la función conversionType'.
-Dentro de la misma es donde se diferencia el caso del External e Inner. 
-Primero se verifica si es Inner y si no lo es, se verifica si es External, si no es ninguna se genera un error.
-
 \subsection{Ejemplos con resultados}
 Una vez que se haya compilado y ejecutado el programa nos aparecerá en la consola esto:
 
@@ -490,6 +457,9 @@ Una cosa a mencionar en el tema de los Bool es que si bien en la gramática el i
 tanto en los LamTerm como en los Term también aparece con esta forma, a la hora de escribirlo y mostrarlo por consola es 
 \textbf{if $t_1$ then $t_2$ else $t_3$}, este cambio se hizo por comodidad y para que sea mas legible, es más común escribirlo como la segunda forma que como 
 la primera.\\
+
+También a la hora de mostrar por pantalla los Naturales lo que se hace es evitar tener que escribir el \textbf{suc} todas las veces que aparece, usando 
+la forma de \textbf{suc$^x$} (donde x representa la cantidad de veces que aparece el \textbf{suc} en el Natural). \\
 
 Veamos ejemplos (estos ejemplos están en el archivo Ejemplos.txt para que puedan ser testeados sin problemas por el lector):
 

@@ -5,6 +5,7 @@ import  Common
 import  Text.PrettyPrint.HughesPJ
 import  Prelude hiding ((<>))
 import Data.String (String)
+import Text.ParserCombinators.ReadP (count)
 
 
 -- Lista de posibles cuantificadores
@@ -31,7 +32,7 @@ parensIf False = id
 -- pretty-printer términos
 
 pp :: Int -> [String] -> Int -> [String] -> Term -> Doc
-pp i v _ _ (Bound k) = text (v !! (i - k - 1))
+pp i v _ _ (Bound k)                    = text (v !! (i - k - 1))
 pp _  _   k cuanExter (Free (Global s)) = text s
 pp i v k cuanExter (t :@: u) = 
   sep [parensIf (isLam t) (pp i v k cuanExter t), nest 1 (parensIf (isLam u || isApp u) (pp i v k cuanExter u))]
@@ -40,7 +41,7 @@ pp i v k cuanExter (Lam t c) =
   text "\\"
     <> text (v !! i)
     <> text ":"
-    <> printType t   -- Ver esto
+    <> printType t
     <> text ". "
     <> pp (i+1) v k cuanExter c
 
@@ -48,7 +49,7 @@ pp i v k cuanExter (ForAll term) =
   text "/\\"
     <> text (cuanExter !! k)
     <> text ". "
-    <> pp i v (k+1) cuanExter  term
+    <> pp i v (k+1) cuanExter term
 
 pp i v k cuanExter  (TApp t typee) =
   parens (pp i v k cuanExter t)
@@ -75,12 +76,19 @@ printBool i v k cuanExter (IfThenElse t1 t2 t3) =
     <> text " else "
     <> pp i v k cuanExter t3
 
+countSuc :: Term -> (Int, Term)
+countSuc (Suc t) = let (y, t') = countSuc t
+                   in (1 + y, t')
+countSuc t       = (0, t) 
+
 printNat :: Int -> [String] -> Int -> [String] -> Term -> Doc
-printNat i v k cuanExter Zero            = text "0"
-printNat i v k cuanExter (Suc t@(Suc _)) = sep [text "suc", pp i v k cuanExter t]
-printNat i v k cuanExter (Suc t)         = sep [text "suc", applyParen i v k cuanExter t]
+printNat i v k cuanExter Zero               = text "0"
+printNat i v k cuanExter t@(Suc (Suc _)) = let (y, t') = countSuc t
+                                              in sep [text $ "suc^" ++ show y, applyParen i v k cuanExter t']
+printNat i v k cuanExter (Suc t)         = sep [text "suc", pp i v k cuanExter t]
 printNat i v k cuanExter (Rec t u w)     = sep [text "R", applyParen i v k cuanExter t, applyParen i v k cuanExter u, applyParen i v k cuanExter w]
 printNat i v k cuanExter t               = pp i v k cuanExter t
+
 
 printList :: Int -> [String] -> Int -> [String] -> Term -> Doc
 printList i v k cuanExter Nil          = text "nil"
@@ -123,7 +131,8 @@ printTypeAuxForAll (ForAllT (Ty t)) n k cuanInter cuanExter = parens $
     <> text (cuanInter !! k)
     <> text ". "
     <> printTypeAuxForAll t n (k+1) cuanInter cuanExter
-printTypeAuxForAll (FunT t1 t2) n k cuanInter cuanExter = sep [parensIf (isFun t1) (printTypeAuxForAll t1 n k cuanInter cuanExter), text "->", printTypeAuxForAll t2 n k cuanInter cuanExter] 
+printTypeAuxForAll (FunT t1 t2) n k cuanInter cuanExter = 
+    sep [parensIf (isFun t1) (printTypeAuxForAll t1 n k cuanInter cuanExter), text "->", printTypeAuxForAll t2 n k cuanInter cuanExter] 
 printTypeAuxForAll t n k  cuanInter cuanExter = printTypeAux t n cuanInter cuanExter
     
 printTypeAux :: Type -> Int -> [String] -> [String] -> Doc
@@ -133,11 +142,10 @@ printTypeAux (ForAllT (Lambd t)) n cuanInter cuanExter = parens $
     <> text (cuanExter !! n)
     <> text ". "
     <> printTypeAux t (n+1) cuanInter cuanExter
-printTypeAux t@(ForAllT (Ty _)) n cuanInter cuanExter = printTypeAuxForAll t n 0 cuanInter cuanExter
-printTypeAux (BoundForAll (Inner k))  _  cuanInter cuanExter = text (cuanInter !! k)
+    
+printTypeAux t@(ForAllT (Ty _)) n cuanInter cuanExter           = printTypeAuxForAll t n 0 cuanInter cuanExter
+printTypeAux (BoundForAll (Inner k))  _  cuanInter cuanExter    = text (cuanInter !! k)
 printTypeAux (BoundForAll (External k))  _  cuanInter cuanExter = text (cuanExter !! k)
-
--------------------------------------------------------------------------------------
 
 -- Bool, Nat, Empty
 printTypeAux BoolT  _ _ _ = text "Bool"
@@ -145,7 +153,8 @@ printTypeAux NatT   _ _ _ = text "Nat"
 printTypeAux EmptyT _ _ _ = text "E"
 
 -- Funcion
-printTypeAux (FunT t1 t2) n cuanInter cuanExter = sep [parensIf (isFun t1) (printTypeAux t1 n cuanInter cuanExter), text "->", parensIf (isFun t2) (printTypeAux t2 n cuanInter cuanExter)]
+printTypeAux (FunT t1 t2) n cuanInter cuanExter = 
+  sep [parensIf (isFun t1) (printTypeAux t1 n cuanInter cuanExter), text "->", printTypeAux t2 n cuanInter cuanExter]
 
 -- List
 printTypeAux (ListT t)  n cuanInter cuanExter = text "List " <> parensIf (inList t) (printTypeAux t n cuanInter cuanExter)

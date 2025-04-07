@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex informe"] 1743590502.77798 "informe.aux" "informe.bbl" "informe" 1743679692.85109 0
+["bibtex informe"] 1744040465.54157 "informe.aux" "informe.bbl" "informe" 1744040530.21258 0
   "./lib.bib" 1741546831 775 f73df07953324a31068c4da1c2170849 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/bibtex/bst/bibtex/unsrt.bst" 1291864736 18030 1376b4b231b50c66211e47e42eda2875 ""
-  "informe.aux" 1743679691 3549 87e07502e5a022b6f0bd4aadc54ba99e "pdflatex"
+  "informe.aux" 1744040529 3400 35ad28e8b6a7a224e1f0b8e4a33e8fd5 "pdflatex"
   (generated)
   "informe.bbl"
   "informe.blg"
   (rewritten before read)
-["pdflatex"] 1743679688.0112 "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" "informe.pdf" "informe" 1743679692.85207 0
-  "C:/Users/Ramiro/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1743613920 121421 986c656c18d5dae14116b93751df729f ""
+["pdflatex"] 1744040527.183 "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" "informe.pdf" "informe" 1744040530.21325 0
+  "C:/Users/Ramiro/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1743853277 121421 986c656c18d5dae14116b93751df729f ""
   "C:/Users/Ramiro/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk" 1725994593 14064 1546adc216da8020c017a4a700ee9bf2 ""
   "C:/Users/Ramiro/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1725973176 24265805 ba274860b5af4f8fb0372ed395b15e4e ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/tcrm1200.tfm" 993062508 1444 95ffe0f19b974d50849790c8225c7ef7 ""
@@ -46,6 +46,7 @@
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/tfm/public/cm/cmtt12.tfm" 1136765053 772 9a936b7f5e2ff0557fce0f62822f0bbf ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1247596666 32080 340ef9bf63678554ee606688e7b5339d ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb" 1247596667 36741 0ee9e374ec3e30da87cdfb0ea3575226 ""
+  "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb" 1247596666 35469 dcf3a5f2fc1862f5952e3ee5eb1d98c4 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb" 1247596667 32722 d7379af29a190c3f453aba36302ff5a9 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb" 1247596666 32362 bc3f3eec7ab7d65fe700963d4017d32c ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb" 1247596667 32726 39f0f9e62e84beb801509898a605dbd5 ""
@@ -220,11 +221,11 @@
   "Imagenes/EjemploBoundForAll.png" 1743109602 100878 33c9dae8def55932f9fab8bcb57ed6b7 ""
   "Imagenes/EjemploBoundForAllFunction.png" 1743334369 69651 55e13f8e47a3c3c5075b713a5a7a4d2b ""
   "Imagenes/EjemploBoundForAllFunction3.png" 1743425638 153213 decfdbc5d21672187e4d05f8cb091c72 ""
-  "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" 1743679686 25392 97641e7f37d978492ee59bd63de08771 ""
-  "informe.aux" 1743679691 3549 87e07502e5a022b6f0bd4aadc54ba99e "pdflatex"
-  "informe.bbl" 1743590503 734 a5e57bb9c9a8d18bc13ce54afb325406 "bibtex informe"
-  "informe.out" 1743679691 3448 170403eb06e89e2aa6a4cdce3538aa9f "pdflatex"
-  "informe.tex" 1743679686 25392 97641e7f37d978492ee59bd63de08771 ""
+  "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" 1744040526 23071 7e9a0b0f4adff82942a3a387d00ab3b8 ""
+  "informe.aux" 1744040529 3400 35ad28e8b6a7a224e1f0b8e4a33e8fd5 "pdflatex"
+  "informe.bbl" 1744040465 734 a5e57bb9c9a8d18bc13ce54afb325406 "bibtex informe"
+  "informe.out" 1744040529 3172 a4a0fb60cde604fd7db9f325c7c4a3e2 "pdflatex"
+  "informe.tex" 1744040526 23071 7e9a0b0f4adff82942a3a387d00ab3b8 ""
   (generated)
   "informe.aux"
   "informe.log"

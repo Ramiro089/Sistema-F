@@ -2,7 +2,7 @@
 module SystemF ( conversion, eval, infer, quote )
 where
 
-import qualified Data.Set as Set
+
 import           Data.List                  ( elemIndex, elemIndices )
 import           Data.Maybe                 ( fromJust, fromMaybe, maybe )
 import           Prelude
@@ -13,12 +13,12 @@ import           Common
 
 -- Convierte un LamTerm a un Term, aplicando una funcion de conversion
 toTerm:: (LamTerm -> Term) -> LamTerm -> [String] -> Term
-toTerm f (LAbs name typee t) c = Lam (conversionType typee c) $ f t
+toTerm f (LAbs name typee t) c = Lam (conversionType (reverse c) typee) $ f t
 toTerm f (LApp t1 t2) _        = f t1 :@: f t2
 
 -- Sistema F
 toTerm f (LTAbs name t)  _ = ForAll (f t)
-toTerm f (LTApp t typee) c = TApp (f t) (conversionType typee c)
+toTerm f (LTApp t typee) c = TApp (f t) (conversionType (reverse c) typee)
 
 -- Bool
 toTerm f LTrue _  = T
@@ -37,7 +37,7 @@ toTerm f (LRecL t1 t2 t3) _ = RecL (f t1) (f t2) (f t3)
 
 toTerm f t _ = error $ "No se puede convertir el lambda termino " ++ show t ++ " a un termino"
 
--- Conversion a Term
+-- Conversion de LamTerm a Term
 conversion :: LamTerm -> Term
 conversion = conversion' [] []
 
@@ -49,53 +49,25 @@ conversion' vars cuan t                      = toTerm (conversion' vars cuan) t 
 
 ------------------------------------------
 
--- La idea de esta función es reemplazar los VarT en los tipos por los BoundForAll,
-conversionType :: Type -> [String] -> Type
-conversionType t@(ForAllT (Ty _)) cuanOG = let (cuan, count) = conversionForAll t
-                                               l  = length cuan
-                                               l' = length cuanOG
-                                               newCuan | l == count = cuan  -- "No hay" abstracciones de afurea
-                                                       | l' + count < l = error "Hay variables sin cuantificar" -- Hay mas variables cuantificadas que cuantificadores en la expresión hasta el momento
-                                                       | otherwise = (\\) cuan cuanOG -- Hay abstracciones de afuera
-                                           in conversionType' t cuanOG newCuan
+-- Transforma el tipo que recibe a tipo valido
+conversionType :: [String] -> Type -> Type
+conversionType = conversionType' [] 
 
-conversionType t cuanOG = conversionType' t cuanOG []
+conversionType' :: [String] -> [String] -> Type -> Type
+conversionType' cuan cuanOG (VarT typee)          = BoundForAll $ maybe (External (elemIndex' typee cuanOG)) Inner (lastElemIndex typee cuan)
+conversionType' cuan cuanOG t@(ForAllT (Lt s t1)) = toType (conversionType' (cuan ++ [s]) cuanOG) t
+conversionType' cuan cuanOG t                     = toType (conversionType' cuan cuanOG) t
 
-------------------------------------------
-
-conversionType' :: Type -> [String] -> [String] -> Type
-conversionType' t@(ForAllT (Ty u)) cuanOG cuan = case cuan of
-                                                   [] -> conversionType t cuanOG
-                                                   _  -> ForAllT (Ty (conversionType' u cuanOG cuan))
-conversionType' (VarT typee) cuanOG cuan = BoundForAll $ maybe (External (elemIndex' typee cuanOG)) Inner (elemIndex typee cuan)
-conversionType' (FunT t1 t2) cuanOG cuan = FunT (conversionType' t1 cuanOG cuan) (conversionType' t2 cuanOG cuan)
-conversionType' (ListT t)    cuanOG cuan = ListT (conversionType' t cuanOG cuan)
-conversionType' t            cuanOG cuan = t
-
-------------------------------------------
-
-{-
-Esta función se encarga de buscar los "N" de los (VarT "N") que aparecen en el Type, y cuenta la cantidad de veces que parecen los (ForAllT Ty).
-Se devuelve un tupla con los "N" encontrados (sin repetición) y el numero de ForAllT Ty que había.
--}
-conversionForAll :: Type -> ([String], Int)
-conversionForAll (ForAllT (Ty t1)) = let (s, i) = conversionForAll t1
-                                     in (s, i+1)
-conversionForAll (FunT t1 t2)      = let (xs, i)  = conversionForAll t1
-                                         (ys, i') = conversionForAll t2
-                                         l = uniqueAppend xs ys
-                                     in (l, i+i')
-conversionForAll (VarT x)          = ([x], 0)
-conversionForAll t                 = ([], 0)
+toType :: (Type -> Type) -> Type -> Type
+toType f t@(ForAllT (Lt s u)) = ForAllT (Ty (f u))
+toType f (FunT t1 t2)         = FunT  (f t1) (f t2)
+toType f (ListT t)            = ListT (f t)
+toType f t                    = t
 
 ------------------------------------------
 
 elemIndex' :: String -> [String] -> Int
-elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (lastElemIndex n (reverse c))
--- Se puede sacar el reverse si se escribe: 
---      conversion' vars cuan t@(LTAbs name lamTerm) = toTerm (conversion' vars (cuan ++ [name])) t cuan
--- En lugar de: 
---      conversion' vars cuan t@(LTAbs name lamTerm) = toTerm (conversion' vars (name:cuan)) t cuan
+elemIndex' n c = fromMaybe (error "Variable no esta cuantificada") (lastElemIndex n c)
 
 lastElemIndex :: Eq a => a -> [a] -> Maybe Int
 lastElemIndex x xs = case elemIndices x xs of
@@ -150,7 +122,7 @@ sub i t (RecL u v w) = let u' = sub i t u
                            w' = sub i t w
                        in RecL u' v' w'
 
--- Sustituye una variable de tipo por un tipo en concreto (la idea es hacer lo que estipula la regla E-TAppAbs)
+-- Sustituye una variable de tipo por un tipo en concreto (la idea es hacer la regla E-TAppAbs)
 sus :: Term -> Type -> Term
 sus (Lam t u) typee       = Lam (susType t typee False) (sus u typee)
 sus (t1 :@: t2) typee     = sus t1 typee :@: sus t2 typee
@@ -304,23 +276,6 @@ singleMatch _ e@(Left _) = e
 singleMatch (expected_type, rst) e@(Right t) | t == expected_type = rst
                                              | otherwise = matchError expected_type t
 
-
--- En un inicio la había pensado como:
--- uniqueAppend xs ys = foldl (\zs x -> if x `elem` zs then zs else zs ++ [x]) xs ys 
--- Pero era O(n*m), de esta forma es O((n + m) log n)
-uniqueAppend :: (Ord a) => [a] -> [a] -> [a]
-uniqueAppend xs ys = xs ++ aux (Set.fromList xs) ys
-  where
-    aux _ [] = []
-    aux xs (y:ys) | y `Set.member` xs = aux xs ys
-                  | otherwise = y : aux (Set.insert y xs) ys
-
--- Redefino la función (\\) de Data.List, para que su complejidad sea menor
--- Originalmente seria O(n*m) pero de esta forma es O((n + m) log m)
-(\\) :: (Ord a) => [a] -> [a] -> [a]
-xs \\ ys = let setYs = Set.fromList ys
-           in filter (`Set.notMember` setYs) xs
-
 ------------------------------------------
 
 infer' :: Context -> NameEnv Value Type -> Term -> Either String Type
@@ -354,7 +309,6 @@ infer' c e (Rec t1 t2 t3) =
 
 -- List
 infer' c e Nil           = ret ListTEmpty
---infer' c e (Cons t1 Nil) = infer' c e t1 >>= \tt1 -> ret (ListT tt1)
 infer' c e (Cons t1 t2)  = infer' c e t1 >>= \tt1 -> match (ListT tt1) (infer' c e t2)
 infer' c e (RecL t1 t2 t3) =
   infer' c e t1 >>= \tt1 -> infer' c e t3 >>= \tt3 ->

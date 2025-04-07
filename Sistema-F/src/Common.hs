@@ -32,11 +32,18 @@ instance Eq Pos where
   External t1 == External t2 = t1 == t2
   Inner t1    == Inner t2    = t1 == t2
 
-data Fat = Lambd Type | Ty Type deriving (Show)
+-- Fat viene de ForAllT, Lambd viene de Lambda, Lt viene de LamTerm, Ty viene de Type
+data Fat = Lambd Type | Lt String Type | Ty Type deriving (Show)
 instance Eq Fat where
-    Ty t1    == Lambd t2 = t1 == t2
-    Lambd t1 == Ty t2    = t1 == t2
-    Ty t1    == Ty t2    = t1 == t2
+    Ty  t1   == Lambd t2 = t1 == t2
+    Lambd t1 == Ty  t2   = t1 == t2
+    Lt _ t1  == Lambd t2 = t1 == t2
+    Lambd t1 == Lt _ t2  = t1 == t2
+    Ty t1    == Lt _ t2  = t1 == t2
+    Lt _ t1  == Ty t2    = t1 == t2
+
+    Lt s t1  == Lt s' t2 = s == s' && t1 == t2 
+    Ty t1    == Ty  t2   = t1 == t2
     Lambd t1 == Lambd t2 = t1 == t2
 
 -- Términos con nombres

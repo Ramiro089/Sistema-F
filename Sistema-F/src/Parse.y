@@ -96,7 +96,7 @@ Atom    :: { LamTerm }
         | '(' Exp ')'                        { $2 }
 
 Type    : TYPEE                              { EmptyT }
-        | '\\/' ANY '.' Type                 { ForAllT (Ty $4) }
+        | '\\/' ANY '.' Type                 { ForAllT (Lt $2 $4) }
         | Type '->' Type                     { FunT $1 $3 }
         | 'Nat'                              { NatT }
         | 'Bool'                             { BoolT }
