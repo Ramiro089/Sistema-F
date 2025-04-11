@@ -53,6 +53,7 @@ import Data.Char
 ------------
 %left '=' 
 %right '->'
+%right 'List'
 %right '\\' '.' 
 ------------
 %right 'suc' 
@@ -181,11 +182,11 @@ lexer cont s = case s of
                  ('<':cs)  -> cont TOpenBracket cs
                  ('>':cs)  -> cont TCloseBracket cs
                  ('0':cs)  -> cont TZero cs
-                 unknown -> Failed $ "No se reconoce "++(show $ take 15 unknown)++ "..."
+                 unknown   -> Failed $ "No se reconoce lo ingresado "++(show $ take 15 unknown)++ "..."
 
     where lexVar cs = case span isAlpha cs of
-                        ("E", rest)    -> cont TTypeE rest
                         ("def", rest)  -> cont TDef rest
+                        ("E", rest)    -> cont TTypeE rest
                         -- Bool
                         ("if", rest)   -> cont TIf rest
                         ("then", rest) -> cont TThen rest
@@ -202,6 +203,6 @@ lexer cont s = case s of
                         ("cons", rest) -> cont TCons rest
                         ("RL", rest)   -> cont TListRec rest
                         ("List", rest) -> cont TTypeList rest
-                        (var, rest) | all isUpper var -> cont (TAny var) rest
+                        (var, rest) | all isUpper var -> cont (TAny var) rest   -- Use el criterio que los cuantificadores deben ir en mayúsculas, otra forma puede ser que la primer letra sea mayúscula
                                     | otherwise       -> cont (TVar var) rest
 }

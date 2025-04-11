@@ -1,4 +1,4 @@
-module Main ( main ) 
+module Main ( main )
 where
 
 import           Control.Exception              ( catch, IOException )
@@ -22,12 +22,12 @@ import           Parse
 
 newtype State = S { ve :: NameEnv Value Type }
 
-data Command = Compile String
-             | Print String
-             | Browse
-             | Quit
+data Command = Quit
+             | None
              | Help
-             | Noop
+             | Browse
+             | Compile String
+             | Print String
              | Type String
 
 data InteractiveCommand = Cmd [String] String (String -> Command) String
@@ -35,17 +35,13 @@ data InteractiveCommand = Cmd [String] String (String -> Command) String
 main :: IO ()
 main = runInputT defaultSettings $
        do args <- lift getArgs
-          readevalprint args (S [])
-
-ioExceptionCatcher :: IOException -> IO (Maybe a)
-ioExceptionCatcher _ = return Nothing
+          iteration args (S [])
 
 -- Se encarga de generar el loop de interacción
-readevalprint :: [String] -> State -> InputT IO ()
-readevalprint args state@(S ve) =
-  let rec st = do mx <- MC.catch
-                    (getInputLine "SF> ")
-                    (lift . ioExceptionCatcher)
+iteration :: [String] -> State -> InputT IO ()
+iteration args state@(S ve) =
+  let rec st = do mx <- MC.catchIOError (getInputLine "SF> ") (\_ -> lift (return Nothing))
+                     -- MC.catch (getInputLine "SF> ")(lift . ioExceptionCatcher)
                   case mx of
                     Nothing -> return ()
                     Just "" -> rec st
@@ -57,45 +53,43 @@ readevalprint args state@(S ve) =
 
 -- Se encarga de procesar la entrada y verificar que el comando sea valido y no ambiguo
 interpretCommand :: String -> InputT IO Command
-interpretCommand x = lift $ if isPrefixOf ":" x
+interpretCommand x = lift $ if ":" `isPrefixOf` x
   then do let (cmd, t') = break isSpace x
           let t         = dropWhile isSpace t'
           let matching  = filter (\(Cmd cs _ _ _) -> any (isPrefixOf cmd) cs) commands
           case matching of
-            [] -> do putStrLn ("Comando desconocido '" ++ cmd ++ "'. Escriba :help para ver los comandos.")
-                     return Noop
             [Cmd _ _ f _] -> do return (f t)
-            _ -> do putStrLn ("Comando ambigüo, podría ser " ++ intercalate ", " ([ head cs | Cmd cs _ _ _ <- matching ]) ++ ".")
-                    return Noop
+            _             -> do putStrLn ("Comando desconocido '" ++ cmd ++ "'. Escriba :help para ver los comandos.")
+                                return None
   else return (Compile x)
 
 -- En base al comando de entrada selecciona la acción a realizar
 handleCommand :: State -> Command -> InputT IO (Maybe State)
 handleCommand state@(S ve) cmd =
   case cmd of
-      Quit       -> lift $ return Nothing
-      Noop       -> return (Just state)
-      Help       -> lift $ putStr (helpTxt commands) >> return (Just state)
-      Browse     -> lift $ do putStr (unlines [ s | Global s <- reverse (nub (map fst ve)) ])
-                              return (Just state)
-      Compile s  -> do state' <- compilePhrase state s
-                       return (Just state')
-      Print s    -> let s' = reverse (dropWhile isSpace (reverse (dropWhile isSpace s)))
-                    in printPhrase s' >> return (Just state)
-      Type s -> do x' <- parseIO term s
-                   t  <- case x' of
-                           Nothing -> return $ Left "Error en el parsing."
-                           Just x  -> return $ infer ve $ conversion x
-                   case t of
-                     Left  err -> lift (putStrLn ("Error de tipos: " ++ err)) >> return ()
-                     Right t'  -> lift $ putStrLn $ render $ printType t'
-                   return (Just state)
+    Quit      -> lift $ return Nothing
+    None      -> return (Just state)
+    Help      -> lift $ putStr (helpTxt commands) >> return (Just state)
+    Browse    -> lift $ do putStr (unlines [ s | Global s <- reverse (nub (map fst ve)) ])
+                           return (Just state)
+    Compile s -> do state' <- compilePhrase state s
+                    return (Just state')
+    Print s   -> let s' = reverse (dropWhile isSpace (reverse (dropWhile isSpace s)))
+                 in printPhrase s' >> return (Just state)
+    Type s    -> do x' <- parseIO term s
+                    t  <- case x' of
+                            Nothing -> return $ Left "Error en el parsing."
+                            Just x  -> return $ infer ve $ conversion x
+                    case t of
+                      Left  err -> lift (putStrLn ("Error de tipos: " ++ err)) >> return ()
+                      Right t'  -> lift $ putStrLn $ render $ printType t'
+                    return (Just state)
 
 commands :: [InteractiveCommand]
-commands = [Cmd [":browse"] ""       (const Browse) "Ver los nombres en scope", 
-            Cmd [":print"]  "<exp>"  Print          "Imprime un término y sus ASTs", 
-            Cmd [":quit"]   ""       (const Quit)   "Salir del intérprete", 
-            Cmd [":help"]   ""       (const Help)   "Muestra una lista de comandos", 
+commands = [Cmd [":browse"] ""       (const Browse) "Ver los nombres en scope",
+            Cmd [":print"]  "<exp>"  Print          "Imprime un término y sus ASTs",
+            Cmd [":quit"]   ""       (const Quit)   "Salir del intérprete",
+            Cmd [":help"]   ""       (const Help)   "Muestra una lista de comandos",
             Cmd [":type"]   "<term>" Type           "Inferir el tipo del término"]
 
 helpTxt :: [InteractiveCommand] -> String
@@ -124,15 +118,15 @@ printPhrase x = do x' <- parseIO parseStmt x
 
 -- Imprime por pantalla cuando se usa el comando :print
 printStmt :: Stmt (LamTerm, Term) -> InputT IO ()
-printStmt stmt = lift $ do let outtext = case stmt of
+printStmt stmt = lift $ do let printText = case stmt of
                                  Def x (_, e) -> "def " ++ x ++ " = " ++ render (printTerm e)
-                                 Eval (d, e)  -> "LamTerm AST:\n"
+                                 Eval (d, e)  -> "AST LamTerm:\n"
                                                    ++ show d
-                                                   ++ "\n\nTerm AST:\n"
+                                                   ++ "\n\nAST Term:\n"
                                                    ++ show e
                                                    ++ "\n\nSe muestra como:\n"
                                                    ++ render (printTerm e)
-                           putStrLn outtext
+                           putStrLn printText
 
 -- Parsea un string. Si no hay problema devuelve el resultado, caso contrario muestra un error por pantalla 
 parseIO :: (String -> ParseResult a) -> String -> InputT IO (Maybe a)
@@ -141,16 +135,16 @@ parseIO p x = lift $ case p x of
                                        return Nothing
                         Ok r -> return (Just r)
 
--- Procesa un "lambda termino", chequeadolo y evaluandolo. Def y Eval actualizan el estado, pero Eval siempre actualiza el mismo "Nombre".
+-- Procesa un "lambda termino", chequeadolo y evaluándolo. Def y Eval actualizan el estado, pero Eval siempre actualiza el mismo "Nombre".
 handleStmt :: State -> Stmt LamTerm -> InputT IO State
 handleStmt state stmt = lift $ do case stmt of
                                     Def x e -> checkType x (conversion e)
                                     Eval e  -> checkType "LastInput" (conversion e)
  where
   checkType i t = do case infer (ve state) t of
-                       Left  err -> putStrLn ("Error de tipos: " ++ err) >> return state
-                       Right ty  -> checkEval i t ty
+                       Left err -> putStrLn ("Error de tipos: " ++ err) >> return state
+                       Right ty -> checkEval i t ty
   checkEval i t ty = do let v = eval (ve state) t
-                        _ <- do let outtext = if i == "LastInput" then render (printTerm (quote v)) else render (text i)
-                                putStrLn outtext
+                        _ <- do let printText = if i == "LastInput" then render (printTerm (quote v)) else render (text i)
+                                putStrLn printText
                         return (state { ve = (Global i, (v, ty)) : ve state })

@@ -345,7 +345,7 @@ en diferentes categorías sintácticas). \\
 \begin{verbatim}
     data Term  = Bound Int
                | Free Name 
-               | Term :@: Term
+               | App Term Term
                | Lam Type Term
                | ForAll Term
                | TApp Term Type

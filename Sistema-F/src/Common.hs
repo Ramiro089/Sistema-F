@@ -1,6 +1,7 @@
-module Common where
+module Common (module Common) 
+where
 
--- Comandos. Para evaluar evaluar o inicializar un expresión
+-- Comandos. Usado para evaluar o inicializar un expresión
 data Stmt i = Def String i | Eval i deriving (Show)
   
 instance Functor Stmt where
@@ -25,7 +26,7 @@ data Type = EmptyT
           | ListT Type
           deriving (Show, Eq)
 
-data Pos = External Int | Inner Int deriving (Show)
+data Pos = External Int | Inner Int deriving (Show)   -- External e Inner son iguales entre si
 instance Eq Pos where
   External t1 == Inner t2    = t1 == t2
   Inner t1    == External t2 = t1 == t2
@@ -33,7 +34,7 @@ instance Eq Pos where
   Inner t1    == Inner t2    = t1 == t2
 
 -- Fat viene de ForAllT, Lambd viene de Lambda, Lt viene de LamTerm, Ty viene de Type
-data Fat = Lambd Type | Lt String Type | Ty Type deriving (Show)
+data Fat = Lambd Type | Lt String Type | Ty Type deriving (Show)    -- Lambd, Lt y Ty son iguales entre si
 instance Eq Fat where
     Ty  t1   == Lambd t2 = t1 == t2
     Lambd t1 == Ty  t2   = t1 == t2
@@ -42,7 +43,7 @@ instance Eq Fat where
     Ty t1    == Lt _ t2  = t1 == t2
     Lt _ t1  == Ty t2    = t1 == t2
 
-    Lt s t1  == Lt s' t2 = s == s' && t1 == t2 
+    Lt s t1  == Lt s' t2 = t1 == t2 && s == s'
     Ty t1    == Ty  t2   = t1 == t2
     Lambd t1 == Lambd t2 = t1 == t2
 
@@ -70,7 +71,7 @@ data LamTerm  =  LVar String
 -- Términos localmente sin nombres
 data Term  = Bound Int
            | Free Name 
-           | Term :@: Term
+           | App Term Term
            | Lam Type Term
            -- Sistema F
            | ForAll Term
@@ -107,8 +108,5 @@ data NumVal = NZero | NSuc NumVal deriving (Show, Eq)
 -- Valores Booleanos
 data BoolVal = NTrue | NFalse deriving (Show, Eq)
 
--- Listas 
+-- Valores Listas 
 data ListVal val = VNil | VCons val (ListVal val) deriving (Show, Eq)
-
--- Contextos del tipado
-type Context = [Type]
