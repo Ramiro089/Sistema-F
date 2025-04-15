@@ -3,9 +3,7 @@ where
 
 import  Common
 import  Text.PrettyPrint.HughesPJ
-import  Prelude hiding ((<>))
-import Data.String (String)
-import Text.ParserCombinators.ReadP (count)
+import  Prelude                     hiding ((<>))
 
 
 -- Lista de posibles cuantificadores
@@ -29,7 +27,7 @@ parensIf True  = parens
 parensIf False = id
 
 -------------------------------------------------
--- pretty-printer términos
+-- | pretty-printer para los términos
 
 printTerm :: Term -> Doc
 printTerm t = pp 0 vars' 0 cuanExter t
@@ -37,8 +35,8 @@ printTerm t = pp 0 vars' 0 cuanExter t
         vars'     = filter (\v -> v `notElem` fv t) vars
 
 pp :: Int -> [String] -> Int -> [String] -> Term -> Doc
-pp i v _ _ (Bound k)                    = text (v !! (i - k - 1))
-pp _  _   k cuanExter (Free (Global s)) = text s
+pp i v _ _ (Bound k)              = text (v !! (i - k - 1))
+pp _ _ k cuanExter (FreeGlobal s) = text s
 pp i v k cuanExter (App t u) = 
   sep [parensIf (isLam t) (pp i v k cuanExter t), nest 1 (parensIf (isLam u || isApp u) (pp i v k cuanExter u))]
 
@@ -56,7 +54,7 @@ pp i v k cuanExter (ForAll term) =
     <> text ". "
     <> pp i v (k+1) cuanExter term
 
-pp i v k cuanExter  (TApp t typee) =
+pp i v k cuanExter (TApp t typee) =
   parens (pp i v k cuanExter t)
     <> text " <"
     <> printType typee
@@ -81,10 +79,6 @@ printBool i v k cuanExter (IfThenElse t1 t2 t3) =
     <> text " else "
     <> pp i v k cuanExter t3
 
-countSuc :: Term -> (Int, Term)
-countSuc (Suc t) = let (y, t') = countSuc t
-                   in (1 + y, t')
-countSuc t       = (0, t) 
 
 printNat :: Int -> [String] -> Int -> [String] -> Term -> Doc
 printNat i v k cuanExter Zero            = text "0"
@@ -94,6 +88,10 @@ printNat i v k cuanExter (Suc t)         = sep [text "suc", pp i v k cuanExter t
 printNat i v k cuanExter (Rec t u w)     = sep [text "R", applyParen i v k cuanExter t, applyParen i v k cuanExter u, applyParen i v k cuanExter w]
 printNat i v k cuanExter t               = pp i v k cuanExter t
 
+countSuc :: Term -> (Int, Term)
+countSuc (Suc t) = let (y, t') = countSuc t
+                   in (1 + y, t')
+countSuc t       = (0, t) 
 
 printList :: Int -> [String] -> Int -> [String] -> Term -> Doc
 printList i v k cuanExter Nil          = text "nil"
@@ -129,7 +127,7 @@ isAtom F    = True
 isAtom _    = False
 
 -------------------------------------------------
--- pretty-printer 
+-- | pretty-printer para los tipos
 
 printType :: Type -> Doc
 printType t = printTypeAux t 0 cuanInter cuanExter
@@ -145,8 +143,8 @@ printTypeAuxForAll (ForAllT (Ty t)) n k cuanInter cuanExter =
 
 printTypeAuxForAll (FunT t1 t2) n k cuanInter cuanExter = 
     sep [parensIf (isFun t1) (printTypeAuxForAll t1 n k cuanInter cuanExter), text "->", printTypeAuxForAll t2 n k cuanInter cuanExter] 
-
-printTypeAuxForAll t n k  cuanInter cuanExter = printTypeAux t n cuanInter cuanExter
+printTypeAuxForAll (ListT t) n k cuanInter cuanExter = text "List " <> parensIf (inList t) (printTypeAuxForAll t n k cuanInter cuanExter)
+printTypeAuxForAll t n k  cuanInter cuanExter        = printTypeAux t n cuanInter cuanExter
     
 printTypeAux :: Type -> Int -> [String] -> [String] -> Doc
 -- Sistema F
@@ -170,7 +168,7 @@ printTypeAux (FunT t1 t2) n cuanInter cuanExter =
   sep [parensIf (isFun t1) (printTypeAux t1 n cuanInter cuanExter), text "->", printTypeAux t2 n cuanInter cuanExter]
 
 -- List
-printTypeAux (ListT t) n cuanInter cuanExter = text "List " <> parensIf (inList t) (printTypeAux t n cuanInter cuanExter)
+printTypeAux (ListT t) n cuanInter cuanExter  = text "List " <> parensIf (inList t) (printTypeAux t n cuanInter cuanExter)
 printTypeAux ListTEmpty _ cuanInter cuanExter = text "Lista Vacía"
 
 -------------------------------------------------
@@ -180,16 +178,16 @@ isFun (FunT _ _) = True
 isFun _          = False
 
 inList :: Type -> Bool
-inList (ListT _)  = True
-inList (FunT _ _) = True
-inList _          = False
---inList (ForAllT (Ty _)) = True
+inList (ListT _)        = True
+inList (FunT _ _)       = True
+inList (ForAllT (Ty _)) = True
+inList _                = False
 
 fv :: Term -> [String]
-fv (Bound _)         = []
-fv (Free (Global n)) = [n]
-fv (App t u)         = fv t ++ fv u
-fv (Lam _ u)         = fv u
+fv (Bound _)      = []
+fv (FreeGlobal n) = [n]
+fv (App t u)      = fv t ++ fv u
+fv (Lam _ u)      = fv u
 
 -- Sistema F
 fv (ForAll t) = fv t

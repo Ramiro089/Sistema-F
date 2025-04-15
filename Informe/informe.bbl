@@ -20,4 +20,9 @@ Cátedra de~Análisis del Lenguaje~de Programación.
 \newblock Polimorfismo.
 \newblock {\em Departamento de Ciencias de la Computación}, 2024.
 
+\bibitem{HaddockDoc}
+Simon Marlow.
+\newblock Haddock documentation, haskell.
+\newblock \url {https://haskell-haddock.readthedocs.io/latest/index.html}.
+
 \end{thebibliography}

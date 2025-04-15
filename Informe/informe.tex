@@ -13,6 +13,7 @@
 \usepackage{bm}
 \usepackage{url}
 \usepackage{hyperref}
+\usepackage{dirtytalk}
 
 \usepackage[edges]{forest}
 \definecolor{folderbg}{RGB}{165, 105, 189}
@@ -162,8 +163,8 @@ Para poder mostrar los términos se utilizo la biblioteca pretty printing, la cu
 donde se encuentra implementado el pretty printer para el Sistema F. \\
 En este podemos distinguir 2 función importantes:
 \begin{itemize}[label=$\bullet$]
-  \item {printTerm: la cual dado un Term lo imprime por pantalla.}
-  \item {printType: la cual se encarga de imprimir por pantalla los Type.}
+  \item {\textbf{printType}: la cual se encarga de imprimir por pantalla los Type.}
+  \item {\textbf{printTerm}: la cual dado un Term lo imprime por pantalla.}
 \end{itemize}
 
 \subsubsection{SystemF.hs}
@@ -175,9 +176,11 @@ para el correcto funcionamiento).
 Los tipos, términos y valores en el Sistema F están dados por la siguientes gramática, respectivamente:
 \begin{align*}
     T &::= E \mid T \rightarrow T \mid X \mid \forall X \ . \ T \mid Bool \mid Nat \mid List \ T\\
-    t &::= x \mid \lambda x:T. \ t \mid t \ t \mid ifthenelse \ t \ t \ t \mid \Lambda X \ . \ t \mid t \ \langle X \rangle \\
-    v &::= True \mid False \mid nv \mid \lambda x:T. \ t \mid \Lambda X \ . \ t \\
+    t &::= x \mid \lambda x:T. \ t \mid t \ t \mid ifthenelse \ t \ t \ t \mid True \mid False \mid 0 \mid suc \ t \mid  nil \mid  \\
+    & \ \ \ \ \ \ cons \ t \ t \mid R \ t \ t \ t \mid RL \ t \ t \ t \mid \Lambda X \ . \ t \mid t \ \langle X \rangle \\
+    v &::= True \mid False \mid nv \mid lv \mid \lambda x:T. \ t \mid \Lambda X \ . \ t \\
     nv &:: = 0 \mid suc \ nv \\
+    lv &:: = nil \mid cons \ n \ lv \\
 \end{align*}
 
 Como se menciono anteriormente, la implementación de estos se encuentra en el archivo \textbf{src/Common.hs} y es la siguiente:
@@ -197,36 +200,36 @@ Como se menciono anteriormente, la implementación de estos se encuentra en el a
 
     data Pos = External Int | Inner Int deriving (Show)
     instance Eq Pos where
-      External t1 == Inner t2    = t1 == t2
-      Inner t1    == External t2 = t1 == t2
-      External t1 == External t2 = t1 == t2
-      Inner t1    == Inner t2    = t1 == t2
+        External t1 == Inner t2    = t1 == t2
+        Inner t1    == External t2 = t1 == t2
+        External t1 == External t2 = t1 == t2
+        Inner t1    == Inner t2    = t1 == t2
     
-      data Fat = Lambd Type | Lt String Type | Ty Type deriving (Show)
-      instance Eq Fat where
-          Ty  t1   == Lambd t2 = t1 == t2
-          Lambd t1 == Ty  t2   = t1 == t2
-          Lt _ t1  == Lambd t2 = t1 == t2
-          Lambd t1 == Lt _ t2  = t1 == t2
-          Ty t1    == Lt _ t2  = t1 == t2
-          Lt _ t1  == Ty t2    = t1 == t2
-      
-          Lt s t1  == Lt s' t2 = s == s' && t1 == t2 
-          Ty t1    == Ty  t2   = t1 == t2
-          Lambd t1 == Lambd t2 = t1 == t2
+    data Fat = Lambd Type | Lt String Type | Ty Type deriving (Show)
+    instance Eq Fat where
+        Ty  t1   == Lambd t2 = t1 == t2
+        Lambd t1 == Ty  t2   = t1 == t2
+        Lt _ t1  == Lambd t2 = t1 == t2
+        Lambd t1 == Lt _ t2  = t1 == t2
+        Ty t1    == Lt _ t2  = t1 == t2
+        Lt _ t1  == Ty t2    = t1 == t2
+    
+        Lt s t1  == Lt s' t2 = t1 == t2 && s == s'   
+        Ty t1    == Ty  t2   = t1 == t2
+        Lambd t1 == Lambd t2 = t1 == t2
 \end{verbatim}
 
 De esta definición se pueden ver muchas cosas, asi que vayamos por parte. Empecemos con la declaración del Type, esta se basa en la gramática del Sistema F, pero 
-posee '2' elementos de más, los cuales son: 
+posee \say{2 elementos} de más, los cuales son: 
 
 \begin{itemize}[label=$\bullet$]
   \item {\textbf{ListTEmpty}\\
   Como se van a poder usar listas de todo tipo surge un problema a la hora de usar una lista vacía, ya que se debería especificar el tipo, 
   a pesar de estar vacía. 
-  Para evitar complicaciones y simplificar esto, lo que decidió fue darle un tipo especial a la lista vacía, \textbf{ListTEmpty}, de esta forma se evita 
+  Para evitar complicaciones y simplificar esto, lo que decidí fue darle un tipo especial a la lista vacía, \textbf{ListTEmpty}, de esta forma se evita 
   tener que darle un tipo especifico.
   
-  Teniéndose que agregar un caso 'especial' para lista vacía en las funciones que pueden recibir una como argumento (como infer' o match)
+  Teniéndose que agregar un caso \say{especial} para lista vacía en las funciones que pueden recibir una como argumento (como infer' o match)
   }
 
   \item {\textbf{BoundForAll}\\
@@ -256,13 +259,14 @@ posee '2' elementos de más, los cuales son:
     \includegraphics[width=.8\textwidth]{Imagenes/EjemploBoundForAllFunction.png}
   \end{center}
 
-  Donde se puede apreciar que se tiene un solo ForAll pero tenemos (BoundForAll 0) y (BoundForAll 1). Uno tendería a 
-  pensar que esto es un error, pero no lo es ya que estos BoundForAll no están 'ligados' al $\Lambda$ sino al $\forall$.\\
+  Donde se puede apreciar que se tiene un solo $\Lambda$ pero tenemos (BoundForAll 0) y (BoundForAll 1). Uno tendería a 
+  pensar que esto es un error, pero no lo es ya que estos BoundForAll no están \say{ligados} al $\Lambda$ sino al $\forall$.\\
 
-  Debido a esto surge la necesidad de poder distinguir cuando un BoundForAll esta 'dentro' o 'afuera'. 
-  Entonces para indicara a cual esta ligado un a variable se introduce el tipo Pos, donde External y Inner indican a que $\Lambda$ y a que $\forall$ esta 
+  Debido a esto surge la necesidad de poder distinguir cuando un BoundForAll esta \say{dentro} o \say{afuera}. 
+  Entonces para indicar a cual esta ligado un a variable se introduce el tipo Pos, donde External y Inner indican a que $\Lambda$ y a que $\forall$ esta 
   ligado respectivamente. 
-  Una cuestión es que los External son 'globales' y los Inner 'locales', usemos este ejemplo para ilustrar esto:
+  Una cuestión es que los External son \say{globales} y los Inner \say{locales}, usemos este ejemplo para ilustrar esto:
+
 
   \begin{center}
     \includegraphics[width=1\textwidth]{Imagenes/EjemploBoundForAllFunction3.png}
@@ -278,9 +282,17 @@ posee '2' elementos de más, los cuales son:
     ($\lambda$x: ($\forall$Y. Y $\rightarrow$ Y). x) ($\Lambda$X. $\lambda$x:X. x)
   \end{center} 
 
-  Ya que en la primera el tipo de x seria algo del estilo, (BoundForAll (Inner 0)) -$>$ (BoundForAll (Inner 0)). Mientras que en la segunda expresión seria 
-  de tipo (BoundForAll (External 0)) -$>$ (BoundForAll (External 0)). Por lo que la única forma de poder hacer la sustitución es que Externa e Inner sean iguales (Esto 
-  se logra definiendo 'manualmente' el Eq de Pos). \\
+  Ya que en la primera el tipo de x seria algo del estilo,
+  \begin{center}
+    (BoundForAll (Inner 0)) $\rightarrow$ (BoundForAll (Inner 0)). 
+  \end{center}
+  Mientras que en la segunda expresión seria de tipo 
+  \begin{center}
+    (BoundForAll (External 0)) $\rightarrow$ (BoundForAll (External 0)). 
+  \end{center}
+  
+  Por lo que la única forma de poder hacer la sustitución es que Externa e Inner sean iguales (Esto 
+  se logra definiendo mi propio Eq de Pos). \\
 
   Otra razón para distinguir entre Inner y External es cuando se realize una aplicación de la forma,
   \begin{center}
@@ -292,14 +304,14 @@ posee '2' elementos de más, los cuales son:
 
   Una decision de diseño importante fue el \textbf{ForAllT Fat}, en un inicio la idea del tipo \textbf{Fat} era tener solo 2 
   constructores los cuales eran el \textbf{Lambd Type} y el \textbf{Ty Type}, los cuales servían para distinguir el 
-  '$\Lambda$' y el '$\forall$' en las expresiones a la hora de imprimir por pantalla. \textbf{Lambd} aparece solo cuando se quiere ver el tipo de 
+  \say{$\Lambda$} y el \say{$\forall$} en las expresiones a la hora de imprimir por pantalla. \textbf{Lambd} aparece solo cuando se quiere ver el tipo de 
   la expresión, \textbf{Ty} se utiliza en el tipo de las variables (osea esta siempre en la expresión). Si no se hiciese la distinción entre \textbf{Lambd} y  \textbf{Ty}, al querer imprimir tipos como:
 
   \begin{center}
     ($\Lambda$A. $\lambda$a:A. $\lambda$b:($\forall$B. B -$>$ B). b)
   \end{center}  
 
-  se producirían incongruencias, ya que no se puede distingue entre '$\Lambda$' y el '$\forall$'. Al agregar el tipo \textbf{Fat} se puede 
+  se producirían incongruencias, ya que no se puede distingue entre \say{$\Lambda$} y el \say{$\forall$}. Al agregar el tipo \textbf{Fat} se puede 
   hacer esta distinción  y se evita el problema.\\
 
   Todavía hay un problema importante con los tipo si al \textbf{Fat} se lo deja solo con esos 2 constructores, hay problemas al momento de parsear 
@@ -311,26 +323,26 @@ posee '2' elementos de más, los cuales son:
 
   es decir, el tipo posee mas $\forall$ de los que se utiliza. Para solucionarlo se agrega el tipo \textbf{Lt String Type}. Lo que se hace es que 
   al momento de parsear la expresión entrante se utiliza el \textbf{Lt} para los $\forall$ de los tipos, y luego cuando se hace la conversion de 
-  LamTerm a Term, se realiza el reemplazo por \textbf{Ty}, asi me evito almacenar el string.\\
+  LamTerm a Term, se realiza el reemplazo por \textbf{Ty}, asi me evito almacenar devuelta el string.\\
 
 
 \noindent Para las expresiones del lambda calculo se tiene:
 \begin{verbatim}
-    data LamTerm  =  LVar String
-                  |  LAbs String Type LamTerm
-                  |  LApp LamTerm LamTerm
-                  |  LTAbs String LamTerm
-                  |  LTApp LamTerm Type
-                  |  LTrue 
-                  |  LFalse
-                  |  LIfThenElse LamTerm LamTerm LamTerm
-                  |  LZero
-                  |  LSuc LamTerm
-                  |  LRec LamTerm LamTerm LamTerm
-                  |  LNil
-                  |  LCons LamTerm LamTerm
-                  |  LRecL LamTerm LamTerm LamTerm
-                  deriving (Show, Eq)
+    data LamTerm = LVar String
+                 | LAbs String Type LamTerm
+                 | LApp LamTerm LamTerm
+                 | LTAbs String LamTerm
+                 | LTApp LamTerm Type
+                 | LTrue 
+                 | LFalse
+                 | LIfThenElse LamTerm LamTerm LamTerm
+                 | LZero
+                 | LSuc LamTerm
+                 | LRec LamTerm LamTerm LamTerm
+                 | LNil
+                 | LCons LamTerm LamTerm
+                 | LRecL LamTerm LamTerm LamTerm
+                 deriving (Show, Eq)
 \end{verbatim}
 
 Al igual que en el Trabajo Practico 2 \cite{tp2:lambdaCalculoSimpleTipado} surge el problema del uso de nombre de variables, al 
@@ -340,27 +352,38 @@ usar la representación con \textbf{indices de De Brujin}. \\
 Al usar una representación sin nombre surge el problema de no tener variables libres,  
 para evitar este inconveniente se utiliza la representación localmente sin nombres (donde variables libres y ligadas están 
 en diferentes categorías sintácticas). \\
-
 \noindent Al utilizar esta representación los términos quedan asi:
 \begin{verbatim}
-    data Term  = Bound Int
-               | Free Name 
-               | App Term Term
-               | Lam Type Term
-               | ForAll Term
-               | TApp Term Type
-               | T
-               | F
-               | IfThenElse Term Term Term
-               | Zero
-               | Suc Term
-               | Rec Term Term Term
-               | Nil
-               | Cons Term Term
-               | RecL Term Term Term
-               deriving (Show, Eq)
+    data Term = Bound Int
+              | FreeGlobal String 
+              | App Term Term
+              | Lam Type Term
+              | ForAll Term
+              | TApp Term Type
+              | T
+              | F
+              | IfThenElse Term Term Term
+              | Zero
+              | Suc Term
+              | Rec Term Term Term
+              | Nil
+              | Cons Term Term
+              | RecL Term Term Term
+              deriving (Show, Eq)
 \end{verbatim}
 
+\noindent Una diferencia respecto al TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} es que se elimino el tipo,
+\begin{verbatim}
+  data Name = Global String deriving (Show, Eq)  
+\end{verbatim}
+y en su lugar, ahora, solo se utiliza String. Esta decision se debe a que en el archivo \textbf{Main.hs} originalmente se usaba la función 
+nub para el comando \textbf{:browse}, teniendo esta un costo de O($n^2$). Al realizar este reemplazo fue posible definir mi propio nub 
+con costo O($n\cdot lg(n)$). \\
+
+En el único lugar que se usaba \say{Name} en Trabajo Practico 2 era en el constructor \say{Free} (en Term), 
+entonces para no perder la idea de que \say{Name} se usaba para 
+representar nombres de variables \say{globales libres} (Free Global), lo que se hizo fue cambiar el constructor \say{Free Name} por 
+\say{FreeGlobal String} y mantener esa idea. 
 
 \subsubsection{Evaluación}
 Para la evaluación el interprete sigue el orden de reducción \textbf{call-by-value} en donde tenemos las siguientes reglas, las cuales 
@@ -402,7 +425,7 @@ son las presentes en el TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} y en el mat
 
 \begin{displaymath}
     \prftree[r]{E-TApp}{t_1 \rightarrow t_1'}{t_1 \ \langle T \rangle \rightarrow t_1' \ \langle T \rangle} \hspace{1cm}
-    \prftree[r]{E-TAppAbs}{(\Lambda X \ . \ t)\ \langle T \rangle \rightarrow t[T/X]}
+    \prftree[r]{E-TAppAbs}{(\Lambda X \ . \ t)\ \langle T \rangle \rightarrow t[X/T]}
 \end{displaymath}
 
 \subsubsection{Tipos}
@@ -420,7 +443,7 @@ presentes en el TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} y en el material de
     \prftree[r]{T-Suc}{\Gamma \vdash t : Nat}{\Gamma \vdash suc \ t : Nat} \hspace{1cm}
 \end{displaymath}
 \begin{displaymath}
-    \prftree[r]{T-Rec}{\Gamma \vdash t_1 : Nat}{\Gamma \vdash t_2 : T \ \rightarrow \ Nat \rightarrow \ T}{\Gamma \vdash t_3 : Nat}{\Gamma \vdash R \ t_1 \ t_2 \ t_3 : T} \hspace{1cm}
+    \prftree[r]{T-Rec}{\Gamma \vdash t_1 : T}{\Gamma \vdash t_2 : T \ \rightarrow \ Nat \rightarrow \ T}{\Gamma \vdash t_3 : Nat}{\Gamma \vdash R \ t_1 \ t_2 \ t_3 : T} \hspace{1cm}
 \end{displaymath}
 
 \begin{displaymath}
@@ -433,7 +456,7 @@ presentes en el TP Nº2 \cite{tp2:lambdaCalculoSimpleTipado} y en el material de
 
 \begin{displaymath}
     \prftree[r]{T-TAbs}{\Gamma, X \vdash t : T}{\Gamma \vdash \Lambda X \ . \ t : \forall X \ . \ T} \hspace{1cm}
-    \prftree[r]{T-TApp}{\Gamma \vdash t_1 : \forall X \ . \ T}{\Gamma \vdash t_1 \langle T_2 \rangle : T[T_2/X]} \hspace{1cm}
+    \prftree[r]{T-TApp}{\Gamma \vdash t_1 : \forall X \ . \ T}{\Gamma \vdash t_1 \langle T_2 \rangle : T[X/T_2]} \hspace{1cm}
 \end{displaymath}
 
 \subsection{Mostrar términos}
@@ -458,7 +481,7 @@ tanto en los LamTerm como en los Term también aparece con esta forma, a la hora
 \textbf{if $t_1$ then $t_2$ else $t_3$}, este cambio se hizo por comodidad y para que sea mas legible, es más común escribirlo como la segunda forma que como 
 la primera.\\
 
-También a la hora de mostrar por pantalla los Naturales lo que se hace es evitar tener que escribir el \textbf{suc} todas las veces que aparece, usando 
+También a la hora de mostrar por pantalla los Naturales lo que se hace es evitar mostrar el \textbf{suc} todas las veces que aparece, sino que se usa 
 la forma de \textbf{suc$^x$} (donde x representa la cantidad de veces que aparece el \textbf{suc} en el Natural). \\
 
 Veamos ejemplos (estos ejemplos están en el archivo Ejemplos.txt para que puedan ser testeados sin problemas por el lector):
@@ -475,15 +498,24 @@ En la consola escribimos: (/\textbackslash X. (\textbackslash xs:List X. RL 0 (\
 Si quisiéramos evaluarla a una lista de funciones polimorficas escribimos: 
 ((/\textbackslash X. (\textbackslash xs:List X. RL 0 (\textbackslash x:X .\textbackslash ys:List X. \textbackslash r:Nat. suc r) xs)) $<$\textbackslash/X. X -$>$ X$>$) 
 (cons (/\textbackslash X. \textbackslash x:X. x) cons (/\textbackslash X. \textbackslash x:X. x) nil)\\
-El cual se reduce a: suc suc 0 \\
+El cual se reduce a: suc$^2$ 0 \\
 
 \noindent (Si se prueba con nil da como resultado 0)
 
 \subsubsection{Funcion que toma como argumento una funcion polimorfica}
 \noindent En el Sistema F se escribiría: $\Lambda A.\ \lambda a:A.\ \lambda b:(\forall B. B \rightarrow  B). \ b$ \\
 En la consola escribimos: (/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash /B. B -$>$ B) . b)\\
-Si quisiéramos evaluarla podría ser algo asi: (((((/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash /B. B -$>$ B) . b) $<$Nat$>$) 0) (/ \textbackslash X. \textbackslash x:X. x)) $<$Bool$>$) T\\
+Si quisiéramos evaluarla podría ser algo asi: (/\textbackslash A. \textbackslash a:A. \textbackslash b:(\textbackslash /B. B -$>$ B) . b) $<$Nat$>$ 0 (/\textbackslash X. \textbackslash x:X. x) $<$Bool$>$ T\\
 El cual se reduce a: T
+
+\section{Documentación Haddock}
+Como algo adicional se pensó en usar Haddock \cite{HaddockDoc} para documentar las principales funciones de los módulos en src.
+Para ver dicha documentación se puede usar el comando:
+\begin{center}
+  stack haddock --open Sistema-F
+\end{center}
+
+
 
 \newpage
 

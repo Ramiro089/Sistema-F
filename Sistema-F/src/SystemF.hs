@@ -2,7 +2,6 @@
 module SystemF ( conversion, eval, infer, quote )
 where
 
-
 import           Data.List                  ( elemIndex, elemIndices )
 import           Data.Maybe                 ( fromJust, fromMaybe, maybe )
 import           Prelude
@@ -27,7 +26,7 @@ toTerm f (LIfThenElse t1 t2 t3) _ = IfThenElse (f t1) (f t2) (f t3)
 
 -- Nat
 toTerm f LZero _           = Zero
-toTerm f (LSuc t) _        = Suc $ f t
+toTerm f (LSuc t) _        = Suc (f t)
 toTerm f (LRec t1 t2 t3) _ = Rec (f t1) (f t2) (f t3)
 
 -- List
@@ -37,19 +36,19 @@ toTerm f (LRecL t1 t2 t3) _ = RecL (f t1) (f t2) (f t3)
 
 toTerm f t _ = error $ "No se puede convertir el lambda termino " ++ show t ++ " a un termino"
 
--- Conversion de LamTerm a Term
+-- | Convierte un termino en formato LamTerm a uno en formato Term
 conversion :: LamTerm -> Term
 conversion = conversion' [] []
 
 conversion' :: [String] -> [String] -> LamTerm -> Term
-conversion' vars cuan (LVar name)            = maybe (Free (Global name)) Bound (elemIndex name vars)
-conversion' vars cuan t@(LAbs name _ _)      = toTerm (conversion' (name:vars) cuan) t cuan
-conversion' vars cuan t@(LTAbs name lamTerm) = toTerm (conversion' vars (name:cuan)) t cuan
-conversion' vars cuan t                      = toTerm (conversion' vars cuan) t cuan
+conversion' vars cuan (LVar name)       = maybe (FreeGlobal name) Bound (elemIndex name vars)
+conversion' vars cuan t@(LAbs name _ _) = toTerm (conversion' (name:vars) cuan) t cuan
+conversion' vars cuan t@(LTAbs name _)  = toTerm (conversion' vars (name:cuan)) t cuan
+conversion' vars cuan t                 = toTerm (conversion' vars cuan) t cuan
 
 ------------------------------------------
 
--- Transforma el tipo que recibe a tipo valido
+-- Transforma el Type que recibe a type valido
 conversionType :: [String] -> Type -> Type
 conversionType = conversionType' [] 
 
@@ -72,7 +71,7 @@ elemIndex' n c = fromMaybe (error "Hay variables que no esta cuantificadas") (la
 lastElemIndex :: Eq a => a -> [a] -> Maybe Int
 lastElemIndex x xs = case elemIndices x xs of
                        [] -> Nothing
-                       l  -> Just (last l)
+                       l  -> Just (last l) 
 {-
 Antes elemIndex' era:
 elemIndex' n c = fromMaybe (error "La variable no esta cuantificada") (elemIndex n c)
@@ -93,7 +92,7 @@ Este mismo problema puede ocurrir cuando se tiene que x tiene tipo (\/X. X -> \/
 sub :: Int -> Term -> Term -> Term
 sub i t (Bound j) | i == j    = t
                   | otherwise = Bound j
-sub _ _ (Free n)              = Free n
+sub _ _ (FreeGlobal n)        = FreeGlobal n
 sub i t (App u v)             = App (sub i t u) (sub i t v)
 sub i t (Lam t' u)            = Lam t' (sub (i + 1) t u)
 
@@ -134,12 +133,19 @@ sus (App t1 t2) typee     = App (sus t1 typee) (sus t2 typee)
 sus (ForAll t) typee      = ForAll (sus t typee)
 sus (TApp t typee') typee = TApp (sus t typee) typee'
 
--- Casos Recursivos
-sus (Rec  t u v) typee    = Rec t (sus u typee) v
-sus (RecL t u v) typee    = RecL (sus t typee) (sus u typee) (sus v typee)
+-- Bool
+sus (IfThenElse t1 t2 t3) typee = IfThenElse (sus t1 typee) (sus t2 typee) (sus t3 typee) 
+
+-- Nat
+sus (Suc t) typee      = Suc (sus t typee)
+sus (Rec  t u v) typee = Rec t (sus u typee) v
+
+-- List
+sus (RecL t u v) typee = RecL (sus t typee) (sus u typee) (sus v typee)
+sus (Cons t1 t2) typee = Cons (sus t1 typee) (sus t2 typee)
 
 -- Cualquier Otro
-sus t _                   = t
+sus t _                = t
 
 ------------------------------------------
 {-
@@ -148,14 +154,15 @@ Se utiliza en la función sus y en la función infer. Pero hay una diferencia, e
 en infer si se debe. Para esto se utiliza un Bool, que indica el caso.
 -}
 susType :: Type -> Type -> Bool -> Type
-susType (FunT t1 t2)     typee b = FunT (susType t1 typee b) (susType t2 typee b)
-susType (ListT t)        typee b = ListT (susType t typee b)
-susType (ForAllT (Ty t)) typee b = ForAllT (Ty (susType t typee b))
+susType (FunT t1 t2)        typee b = FunT (susType t1 typee b) (susType t2 typee b)
+susType (ListT t)           typee b = ListT (susType t typee b)
+susType (ForAllT (Ty t))    typee b = ForAllT (Ty (susType t typee b))
+susType (ForAllT (Lambd t)) typee b = ForAllT (Lambd (susType t typee b))
 susType (BoundForAll (External k)) typee _ = if k == 0 then typee else BoundForAll $ External (k - 1)
 susType (BoundForAll (Inner k)) typee True = if k == 0 then typee else BoundForAll $ Inner (k - 1)
 susType t _ _                              = t
 
--- Convierte valor a un termino equivalente
+-- | Convierte valor a un termino (de tipo Term) equivalente
 quote :: Value -> Term
 quote (VLam t f) = Lam t f
 
@@ -171,16 +178,16 @@ quote (VNum NZero)    = Zero
 quote (VNum (NSuc n)) = Suc $ quote $ VNum n
 
 -- List
-quote (VList VNil) = Nil
+quote (VList VNil)         = Nil
 quote (VList (VCons x xs)) = Cons (quote x) (quote (VList xs))
 
--- Evalúa un termino en un entorno dado
+-- | Evalúa un termino (de tipo Term) en un entorno dado
 eval :: NameEnv Value Type -> Term -> Value
-eval nvs (Free n)    = fst $ fromJust (lookup n nvs)
-eval nvs (Lam t u)   = VLam t u
-eval nvs (App t1 t2) = let (VLam _ t1') = eval nvs t1
-                           t2' = eval nvs t2
-                       in eval nvs $ sub 0 (quote t2') t1'
+eval nvs (FreeGlobal n) = fst $ fromJust (lookup n nvs)
+eval nvs (Lam t u)      = VLam t u
+eval nvs (App t1 t2)    = let (VLam _ t1') = eval nvs t1
+                              t2' = eval nvs t2
+                          in eval nvs $ sub 0 (quote t2') t1'
 
 -- Sistema F
 eval nvs (ForAll t)     = VForAll t
@@ -223,7 +230,7 @@ eval nvs (RecL t1 t2 t3) = case eval nvs t3 of
 eval _ t = error $ "No se puede convertir el termino " ++ show t ++ " a un valor"
 
 ------------------------------------------
--- Infiere el tipo de un término
+-- | Infiere el tipo de un término (de tipo Term)
 infer :: NameEnv Value Type -> Term -> Either String Type
 infer = infer' []
 
@@ -239,7 +246,7 @@ notfunError :: Type -> Either String Type
 notfunError t1 = err $ render (printType t1) ++ " no puede ser aplicado."
 
 -- Imprime que la variable no esta definida
-notfoundError :: Name -> Either String Type
+notfoundError :: String -> Either String Type
 notfoundError n = err $ show n ++ " no está definida."
 
 -- Imprime que los tipo no coinciden
@@ -283,10 +290,10 @@ singleMatch (expected_type, rst) e@(Right t) | t == expected_type = rst
 ------------------------------------------
 
 infer' :: [Type] -> NameEnv Value Type -> Term -> Either String Type
-infer' c _ (Bound i) = ret (c !! i)
-infer' _ e (Free  n) = maybe (notfoundError n) (ret . snd) (lookup n e)
-infer' c e (App t u) = checkIsFun (infer' c e t) >>= \(FunT t1 t2) -> match t1 (infer' c e u) >> ret t2
-infer' c e (Lam t u) = infer' (t : c) e u >>= \u' -> ret $ FunT t u'
+infer' c _ (Bound i)      = ret (c !! i)
+infer' _ e (FreeGlobal n) = maybe (notfoundError n) (ret . snd) (lookup n e)
+infer' c e (App t u)      = checkIsFun (infer' c e t) >>= \(FunT t1 t2) -> match t1 (infer' c e u) >> ret t2
+infer' c e (Lam t u)      = infer' (t : c) e u >>= \u' -> ret $ FunT t u'
 
 -- Sistema F
 infer' c e (ForAll t)              = infer' c e t >>= \t' -> ret $ ForAllT (Lambd t')
@@ -312,12 +319,12 @@ infer' c e (Rec t1 t2 t3) =
     singleMatch (FunT t1' (FunT NatT t1'), match NatT (infer' c e t3)) (infer' c e t2) >> ret t1'
 
 -- List
-infer' c e Nil           = ret ListTEmpty
-infer' c e (Cons t1 t2)  = infer' c e t1 >>= \t1' -> match (ListT t1') (infer' c e t2)
+infer' c e Nil             = ret ListTEmpty
+infer' c e (Cons t1 t2)    = infer' c e t1 >>= \t1' -> match (ListT t1') (infer' c e t2)
 infer' c e (RecL t1 t2 t3) =
   infer' c e t1 >>= \t1' -> infer' c e t3 >>= \t3' ->
     case t1' of
       ListTEmpty -> checkIsFunInRL (infer' c e t2) >>= \(FunT t (FunT t' (FunT v v'))) -> match t' (ret t3') >> ret v
       _          -> case t3' of
                        ListT t -> singleMatch (FunT t (FunT t3' (FunT t1' t1')), ret t3') (infer' c e t2) >> ret t1'
-                       _       -> err $ "El tercer argumento " ++ show t3 ++ " de RL no es un ListT"
+                       _       -> err $ "El tercer argumento de RL, " ++ show t3 ++ " no es un ListT"

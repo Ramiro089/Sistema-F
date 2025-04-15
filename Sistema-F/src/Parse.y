@@ -1,5 +1,16 @@
 {
-module Parse where
+{-| En este modulo es donde se definen y utilizan los parser
+
+Los parsers definidos son:
+
+* parseStmt
+
+* term
+
+-}
+module Parse (parseStmt, term, ParseResult(..), P(..))
+where
+
 import Common
 import Data.Maybe
 import Data.Char
@@ -71,20 +82,16 @@ Defexp  : DEF VAR '=' Exp                    { Def $2 $4 }
 
 Exp     :: { LamTerm }
         : '/\\'  ANY '.' Exp                 { LTAbs $2 $4 }
-        | '\\' VAR ':' X '.' Exp             { LAbs $2 $4 $6 }
+        | '\\' VAR ':' Type '.' Exp          { LAbs $2 $4 $6 }
         | NAbs                               { $1 }
-
-X       :: { Type }
-        : Type                               { $1 }
-        | ANY                                { VarT $1 }
 
 NAbs    :: { LamTerm }
         : Exp '<' Type '>'                   { LTApp $1 $3 }
         | NAbs Atom                          { LApp $1 $2 }
         | 'suc' NAbs                         { LSuc $2 }
-        | 'cons' NAbs NAbs                   { LCons $2 $3 }
+        | 'cons' Atom Atom                   { LCons $2 $3 }
         | 'if' NAbs 'then' NAbs 'else' NAbs  { LIfThenElse $2 $4 $6 }
-        | 'R' NAbs NAbs NAbs                 { LRec $2 $3 $4 }
+        | 'R' Atom Atom NAbs                 { LRec $2 $3 $4 }
         | 'RL' NAbs NAbs NAbs                { LRecL $2 $3 $4 }
         | Atom                               { $1 }
 
@@ -182,7 +189,7 @@ lexer cont s = case s of
                  ('<':cs)  -> cont TOpenBracket cs
                  ('>':cs)  -> cont TCloseBracket cs
                  ('0':cs)  -> cont TZero cs
-                 unknown   -> Failed $ "No se reconoce lo ingresado "++(show $ take 15 unknown)++ "..."
+                 unknown   -> Failed $ "No se reconoce lo ingresado " ++ (show $ take 15 unknown) ++ "..."
 
     where lexVar cs = case span isAlpha cs of
                         ("def", rest)  -> cont TDef rest
@@ -203,6 +210,7 @@ lexer cont s = case s of
                         ("cons", rest) -> cont TCons rest
                         ("RL", rest)   -> cont TListRec rest
                         ("List", rest) -> cont TTypeList rest
+                        -- Cuantificador/Variable
                         (var, rest) | all isUpper var -> cont (TAny var) rest   -- Use el criterio que los cuantificadores deben ir en mayúsculas, otra forma puede ser que la primer letra sea mayúscula
                                     | otherwise       -> cont (TVar var) rest
 }

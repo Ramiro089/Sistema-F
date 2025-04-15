@@ -1,24 +1,28 @@
 module Main ( main )
 where
 
-import           Control.Exception              ( catch, IOException )
+import qualified Control.Monad.Catch     as MC
+import qualified Data.Set                as Set
 import           Control.Monad.Except
 import           Data.Char
 import           Data.List                      ( isPrefixOf, intercalate, nub )
 import           Data.Maybe
 import           Prelude                 hiding ( print )
 import           System.Console.Haskeline
-import qualified Control.Monad.Catch     as MC
 import           System.Environment
 import           System.IO               hiding ( print )
 import           Text.PrettyPrint.HughesPJ      ( render, text )
 import           Control.Monad.Trans
-import           Control.Monad.IO.Class         ( liftIO )
-import           Control.Monad                  ( foldM, when )
 import           Common
 import           PrettyPrinter
 import           SystemF
 import           Parse
+
+myNub :: Ord a => [a] -> [a]
+myNub = aux Set.empty
+  where aux _ [] = []
+        aux ys (x:xs) | Set.member x ys = aux ys xs
+                      | otherwise       = x : aux (Set.insert x ys) xs
 
 newtype State = S { ve :: NameEnv Value Type }
 
@@ -41,17 +45,16 @@ main = runInputT defaultSettings $
 iteration :: [String] -> State -> InputT IO ()
 iteration args state@(S ve) =
   let rec st = do mx <- MC.catchIOError (getInputLine "SF> ") (\_ -> lift (return Nothing))
-                     -- MC.catch (getInputLine "SF> ")(lift . ioExceptionCatcher)
                   case mx of
                     Nothing -> return ()
                     Just "" -> rec st
                     Just x  -> do c   <- interpretCommand x
                                   st' <- handleCommand st c
                                   maybe (return ()) rec st'
-  in do lift $ putStrLn ("Intérprete de Sistema F" ++ "\n" ++ "Escriba :help para ver los comandos")
+  in do lift $ putStrLn ("\n" ++ "Intérprete de Sistema F" ++ "\n" ++ "Escriba :help para ver los comandos")
         rec state
 
--- Se encarga de procesar la entrada y verificar que el comando sea valido y no ambiguo
+-- Se encarga de procesar la entrada y verificar que el comando sea valido
 interpretCommand :: String -> InputT IO Command
 interpretCommand x = lift $ if ":" `isPrefixOf` x
   then do let (cmd, t') = break isSpace x
@@ -70,7 +73,7 @@ handleCommand state@(S ve) cmd =
     Quit      -> lift $ return Nothing
     None      -> return (Just state)
     Help      -> lift $ putStr (helpTxt commands) >> return (Just state)
-    Browse    -> lift $ do putStr (unlines [ s | Global s <- reverse (nub (map fst ve)) ])
+    Browse    -> lift $ do putStr (unlines (reverse (myNub (map fst ve))))
                            return (Just state)
     Compile s -> do state' <- compilePhrase state s
                     return (Just state')
@@ -128,7 +131,7 @@ printStmt stmt = lift $ do let printText = case stmt of
                                                    ++ render (printTerm e)
                            putStrLn printText
 
--- Parsea un string. Si no hay problema devuelve el resultado, caso contrario muestra un error por pantalla 
+-- Parsea un string, se le pasa el parser a usar. Si no hay problema devuelve el resultado, caso contrario muestra un error por pantalla 
 parseIO :: (String -> ParseResult a) -> String -> InputT IO (Maybe a)
 parseIO p x = lift $ case p x of
                         Failed e -> do putStrLn e
@@ -147,4 +150,4 @@ handleStmt state stmt = lift $ do case stmt of
   checkEval i t ty = do let v = eval (ve state) t
                         _ <- do let printText = if i == "LastInput" then render (printTerm (quote v)) else render (text i)
                                 putStrLn printText
-                        return (state { ve = (Global i, (v, ty)) : ve state })
+                        return (state { ve = (i, (v, ty)) : ve state })

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.9.10)  10 APR 2025 17:02
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.9.10)  15 APR 2025 07:51
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -345,6 +345,12 @@ Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
 Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 285.
 )
 \Hy@SectionHShift=\skip60
+) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/dirtytalk\dirtytalk.sty
+Package: dirtytalk 2010/11/21 A package making "quoting" easier
+ (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/base\ifthen.sty
+Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
+)
+\c@dirtytalk@qdepth=\count306
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/forest\forest.sty
 Package: forest 2017/07/14 v2.1.5 Drawing (linguistic) trees
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/pgf/frontendlayer\tikz.sty (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgf.sty (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfrcs.sty (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil-common.tex
@@ -377,14 +383,14 @@ Package: pgfsys 2023-01-15 v3.1.10 (3.1.10)
 \pgf@yd=\dimen198
 \w@pgf@writea=\write3
 \r@pgf@reada=\read3
-\c@pgf@counta=\count306
-\c@pgf@countb=\count307
-\c@pgf@countc=\count308
-\c@pgf@countd=\count309
+\c@pgf@counta=\count307
+\c@pgf@countb=\count308
+\c@pgf@countc=\count309
+\c@pgf@countd=\count310
 \t@pgf@toka=\toks40
 \t@pgf@tokb=\toks41
 \t@pgf@tokc=\toks42
-\pgf@sys@id@count=\count310
+\pgf@sys@id@count=\count311
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgf.cfg
 File: pgf.cfg 2023-01-15 v3.1.10 (3.1.10)
 )
@@ -395,8 +401,8 @@ File: pgfsys-pdftex.def 2023-01-15 v3.1.10 (3.1.10)
 File: pgfsys-common-pdf.def 2023-01-15 v3.1.10 (3.1.10)
 ))) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsyssoftpath.code.tex
 File: pgfsyssoftpath.code.tex 2023-01-15 v3.1.10 (3.1.10)
-\pgfsyssoftpath@smallbuffer@items=\count311
-\pgfsyssoftpath@bigbuffer@items=\count312
+\pgfsyssoftpath@smallbuffer@items=\count312
+\pgfsyssoftpath@bigbuffer@items=\count313
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsysprotocol.code.tex
 File: pgfsysprotocol.code.tex 2023-01-15 v3.1.10 (3.1.10)
 )) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
@@ -419,13 +425,13 @@ Package xcolor Info: Model `wave' substituted by `hsb' on input line 1373.
 Package: pgfcore 2023-01-15 v3.1.10 (3.1.10)
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code.tex (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathutil.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathparser.code.tex
 \pgfmath@dimen=\dimen199
-\pgfmath@count=\count313
+\pgfmath@count=\count314
 \pgfmath@box=\box73
 \pgfmath@toks=\toks43
 \pgfmath@stack@operand=\toks44
 \pgfmath@stack@operation=\toks45
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.basic.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.trigonometric.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.random.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.comparison.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.base.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.round.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.misc.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.integerarithmetics.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathcalc.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfloat.code.tex
-\c@pgfmathroundto@lastzeros=\count314
+\c@pgfmathroundto@lastzeros=\count315
 )) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfint.code.tex) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepoints.code.tex
 File: pgfcorepoints.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@picminx=\dimen256
@@ -455,7 +461,7 @@ File: pgfcorescopes.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfpic=\box74
 \pgf@hbox=\box75
 \pgf@layerbox@main=\box76
-\pgf@picture@serial@count=\count315
+\pgf@picture@serial@count=\count316
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoregraphicstate.code.tex
 File: pgfcoregraphicstate.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgflinewidth=\dimen274
@@ -476,8 +482,8 @@ File: pgfcorearrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreshade.code.tex
 File: pgfcoreshade.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@max=\dimen279
-\pgf@sys@shading@range@num=\count316
-\pgf@shadingcount=\count317
+\pgf@sys@shading@range@num=\count317
+\pgf@shadingcount=\count318
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreimage.code.tex
 File: pgfcoreimage.code.tex 2023-01-15 v3.1.10 (3.1.10)
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreexternal.code.tex
@@ -512,7 +518,7 @@ Package: pgffor 2023-01-15 v3.1.10 (3.1.10)
 Package: tikz 2023-01-15 v3.1.10 (3.1.10)
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibraryplothandlers.code.tex
 File: pgflibraryplothandlers.code.tex 2023-01-15 v3.1.10 (3.1.10)
-\pgf@plot@mark@count=\count318
+\pgf@plot@mark@count=\count319
 \pgfplotmarksize=\dimen284
 )
 \tikz@lastx=\dimen285
@@ -527,17 +533,17 @@ File: pgflibraryplothandlers.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \tikz@figbox@bg=\box80
 \tikz@tempbox=\box81
 \tikz@tempbox@bg=\box82
-\tikztreelevel=\count319
-\tikznumberofchildren=\count320
-\tikznumberofcurrentchild=\count321
-\tikz@fig@count=\count322
+\tikztreelevel=\count320
+\tikznumberofchildren=\count321
+\tikznumberofcurrentchild=\count322
+\tikz@fig@count=\count323
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodulematrix.code.tex
 File: pgfmodulematrix.code.tex 2023-01-15 v3.1.10 (3.1.10)
-\pgfmatrixcurrentrow=\count323
-\pgfmatrixcurrentcolumn=\count324
-\pgf@matrix@numberofcolumns=\count325
+\pgfmatrixcurrentrow=\count324
+\pgfmatrixcurrentcolumn=\count325
+\pgf@matrix@numberofcolumns=\count326
 )
-\tikz@expandcount=\count326
+\tikz@expandcount=\count327
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibrarytopaths.code.tex
 File: tikzlibrarytopaths.code.tex 2023-01-15 v3.1.10 (3.1.10)
 ))) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibraryshapes.code.tex
@@ -558,8 +564,8 @@ File: pgflibraryshapes.symbols.code.tex 2023-01-15 v3.1.10 (3.1.10)
 File: tikzlibraryshapes.arrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries/shapes\pgflibraryshapes.arrows.code.tex
 File: pgflibraryshapes.arrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibraryshapes.callouts.code.tex (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries/shapes\pgflibraryshapes.callouts.code.tex))
-(C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibraryshapes.multipart.code.tex
+))
+(C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibraryshapes.callouts.code.tex (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries/shapes\pgflibraryshapes.callouts.code.tex)) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibraryshapes.multipart.code.tex
 File: tikzlibraryshapes.multipart.code.tex 2023-01-15 v3.1.10 (3.1.10)
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries/shapes\pgflibraryshapes.multipart.code.tex
 File: pgflibraryshapes.multipart.code.tex 2023-01-15 v3.1.10 (3.1.10)
@@ -588,7 +594,7 @@ File: tikzlibraryfit.code.tex 2023-01-15 v3.1.10 (3.1.10)
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibrarycalc.code.tex
 File: tikzlibrarycalc.code.tex 2023-01-15 v3.1.10 (3.1.10)
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibraryintersections.code.tex (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibraryfpu.code.tex)
-\pgf@intersect@solutions=\count327
+\pgf@intersect@solutions=\count328
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/pgfopts\pgfopts.sty
 Package: pgfopts 2014/07/10 v2.1a LaTeX package options with pgfkeys
 \pgfopts@list@add@a@toks=\toks48
@@ -603,45 +609,45 @@ Package: trimspaces 2009/09/17 v1.1 Trim spaces around a token list
 Package: expl3 2024-08-16 L3 programming layer (loader) 
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count328
+\l__color_backend_stack_int=\count329
 \l__pdf_internal_box=\box103
 ))
 Package: xparse 2024-08-16 L3 Experimental document command parser
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/inlinedef\inlinedef.sty
 Package: inlinedef 2008/07/10 v1.0 Inlined expansions within definitions
 \ID@toks=\toks50
-\ID@count=\count329
+\ID@count=\count330
 )
 \ID@usercommands=\toks51
-\safeloop@depth=\count330
-\safeRKloop@depth=\count331
+\safeloop@depth=\count331
+\safeRKloop@depth=\count332
 \forest@temp@dimen=\dimen293
-\forest@temp@count=\count332
-\forest@n=\count333
-\forest@temp@global@count=\count334
+\forest@temp@count=\count333
+\forest@n=\count334
+\forest@temp@global@count=\count335
 \forest@temp@toks=\toks52
-\forest@temparray@M=\count335
-\forest@temparray@N=\count336
-\forest@global@temparray@M=\count337
-\forest@global@temparray@N=\count338
-\forest@isnum@count=\count339
-\forest@isdim@nonintpart=\count340
+\forest@temparray@M=\count336
+\forest@temparray@N=\count337
+\forest@global@temparray@M=\count338
+\forest@global@temparray@N=\count339
+\forest@isnum@count=\count340
+\forest@isdim@nonintpart=\count341
 \forest@isdim@dimen=\dimen294
-\forest@sort@m=\count341
-\forest@sort@k=\count342
-\forest@sort@p=\count343
+\forest@sort@m=\count342
+\forest@sort@k=\count343
+\forest@sort@p=\count344
 \bracket@content=\toks53
 \bracket@afterthought=\toks54
-\forest@node@maxid=\count344
-\forest@process@left@M=\count345
-\forest@process@left@N=\count346
-\forest@process@right@M=\count347
-\forest@process@right@N=\count348
-\forest@process@saved@M=\count349
-\forest@process@saved@N=\count350
-\forest@process@result@M=\count351
-\forest@process@result@N=\count352
-\forest@process@n=\count353
+\forest@node@maxid=\count345
+\forest@process@left@M=\count346
+\forest@process@left@N=\count347
+\forest@process@right@M=\count348
+\forest@process@right@N=\count349
+\forest@process@saved@M=\count350
+\forest@process@saved@N=\count351
+\forest@process@result@M=\count352
+\forest@process@result@N=\count353
+\forest@process@n=\count354
 \forest@nodewalk@branch@toks=\toks55
 \forest@nodewalk@shortsteps@resolution=\toks56
 \forest@do@dynamics=\toks57
@@ -656,31 +662,31 @@ Package: inlinedef 2008/07/10 v1.0 Inlined expansions within definitions
 \forest@PIii@toks=\toks61
 \forest@copy@in=\read4
 \forest@copy@out=\write4
-\forest@externalize@max@outer@n=\count354
-\forest@externalize@inner@n=\count355
+\forest@externalize@max@outer@n=\count355
+\forest@externalize@inner@n=\count356
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/forest\forest-lib-edges.sty
 Package: forest-lib-edges 2016/12/05 v0.1.1
 )
 \Size=\skip61
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.sty
-\lst@mode=\count356
+\lst@mode=\count357
 \lst@gtempboxa=\box105
 \lst@token=\toks62
-\lst@length=\count357
+\lst@length=\count358
 \lst@currlwidth=\dimen299
-\lst@column=\count358
-\lst@pos=\count359
+\lst@column=\count359
+\lst@pos=\count360
 \lst@lostspace=\dimen300
 \lst@width=\dimen301
-\lst@newlines=\count360
-\lst@lineno=\count361
+\lst@newlines=\count361
+\lst@lineno=\count362
 \lst@maxwidth=\dimen302
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstpatch.sty
 File: lstpatch.sty 2024/05/25 1.10b (Carsten Heinz)
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
 File: lstmisc.sty 2024/05/25 1.10b (Carsten Heinz)
-\c@lstnumber=\count362
-\lst@skipnumbers=\count363
+\c@lstnumber=\count363
+\lst@skipnumbers=\count364
 \lst@framebox=\box106
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.cfg
 File: listings.cfg 2024/05/25 1.10b listings configuration
@@ -691,32 +697,32 @@ Package: blindtext 2012/01/06 V2.0 blindtext-Package
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/tools\xspace.sty
 Package: xspace 2014/10/28 v1.13 Space after command names (DPC,MH)
 )
-\c@blindtext=\count364
-\c@Blindtext=\count365
-\c@blind@countparstart=\count366
-\blind@countxx=\count367
-\blindtext@numBlindtext=\count368
-\blind@countyy=\count369
-\c@blindlist=\count370
-\c@blindlistlevel=\count371
-\c@blindlist@level=\count372
-\blind@listitem=\count373
-\c@blind@listcount=\count374
-\c@blind@levelcount=\count375
-\blind@mathformula=\count376
-\blind@Mathformula=\count377
-\c@blind@randomcount=\count378
-\c@blind@randommax=\count379
-\c@blind@pangramcount=\count380
-\c@blind@pangrammax=\count381
+\c@blindtext=\count365
+\c@Blindtext=\count366
+\c@blind@countparstart=\count367
+\blind@countxx=\count368
+\blindtext@numBlindtext=\count369
+\blind@countyy=\count370
+\c@blindlist=\count371
+\c@blindlistlevel=\count372
+\c@blindlist@level=\count373
+\blind@listitem=\count374
+\c@blind@listcount=\count375
+\c@blind@levelcount=\count376
+\blind@mathformula=\count377
+\blind@Mathformula=\count378
+\c@blind@randomcount=\count379
+\c@blind@randommax=\count380
+\c@blind@pangramcount=\count381
+\c@blind@pangrammax=\count382
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
 Package: geometry 2020/01/02 v5.9 Page Geometry
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
 Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 )
-\Gm@cnth=\count382
-\Gm@cntv=\count383
-\c@Gm@tempcnt=\count384
+\Gm@cnth=\count383
+\Gm@cntv=\count384
+\c@Gm@tempcnt=\count385
 \Gm@bindingoffset=\dimen303
 \Gm@wd@mp=\dimen304
 \Gm@odd@mp=\dimen305
@@ -732,36 +738,36 @@ LaTeX Info: Redefining \% on input line 11.
 )
 \openout1 = `informe.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count385
+\scratchcounter=\count386
 \scratchdimen=\dimen311
 \scratchbox=\box107
-\nofMPsegments=\count386
-\nofMParguments=\count387
+\nofMPsegments=\count387
+\nofMParguments=\count388
 \everyMPshowfont=\toks64
-\MPscratchCnt=\count388
+\MPscratchCnt=\count389
 \MPscratchDim=\dimen312
-\MPnumerator=\count389
-\makeMPintoPDFobject=\count390
+\MPnumerator=\count390
+\makeMPintoPDFobject=\count391
 \everyMPtoPDFconversion=\toks65
 ) (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
@@ -769,14 +775,14 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-LaTeX Info: Redefining \. on input line 68.
-LaTeX Info: Redefining \% on input line 68.
-Package hyperref Info: Link coloring OFF on input line 68.
+LaTeX Info: Redefining \. on input line 69.
+LaTeX Info: Redefining \% on input line 69.
+Package hyperref Info: Link coloring OFF on input line 69.
  (informe.out) (informe.out)
 \@outlinefile=\write5
 \openout5 = `informe.out'.
 
-\c@lstlisting=\count391
+\c@lstlisting=\count392
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -812,11 +818,11 @@ Package hyperref Info: Link coloring OFF on input line 68.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 70.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 71.
 (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 70.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 71.
  (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
@@ -829,21 +835,21 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.137 P
+l.138 P
        ara entender como funciona el proyecto veamos la función de los arch... [1]
-Underfull \hbox (badness 10000) in paragraph at lines 142--144
+Underfull \hbox (badness 10000) in paragraph at lines 143--145
 
  []
 
 
 
 [2]
-Underfull \hbox (badness 10000) in paragraph at lines 153--155
+Underfull \hbox (badness 10000) in paragraph at lines 154--156
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 156--159
+Underfull \hbox (badness 10000) in paragraph at lines 157--160
 
  []
 
@@ -852,113 +858,113 @@ Underfull \hbox (badness 10000) in paragraph at lines 156--159
 [3]
 
 [4]
-<Imagenes/EjemploBoundForAll.png, id=124, 558.28575pt x 531.1845pt>
+<Imagenes/EjemploBoundForAll.png, id=128, 558.28575pt x 531.1845pt>
 File: Imagenes/EjemploBoundForAll.png Graphic file (type png)
 <use Imagenes/EjemploBoundForAll.png>
-Package pdftex.def Info: Imagenes/EjemploBoundForAll.png  used on input line 238.
+Package pdftex.def Info: Imagenes/EjemploBoundForAll.png  used on input line 241.
 (pdftex.def)             Requested size: 303.53267pt x 288.7968pt.
 
 
 [5]
-Underfull \hbox (badness 10000) in paragraph at lines 241--244
+Underfull \hbox (badness 10000) in paragraph at lines 244--247
 
  []
 
-<Imagenes/EjemploBoundForAllFunction.png, id=130, 558.888pt x 220.4235pt>
+<Imagenes/EjemploBoundForAllFunction.png, id=134, 558.888pt x 220.4235pt>
 File: Imagenes/EjemploBoundForAllFunction.png Graphic file (type png)
 <use Imagenes/EjemploBoundForAllFunction.png>
-Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction.png  used on input line 256.
+Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction.png  used on input line 259.
 (pdftex.def)             Requested size: 346.89731pt x 136.81586pt.
 
 
 [6 <./Imagenes/EjemploBoundForAll.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 259--261
+Underfull \hbox (badness 10000) in paragraph at lines 262--264
 
  []
 
-<Imagenes/EjemploBoundForAllFunction3.png, id=137, 846.7635pt x 258.9675pt>
+<Imagenes/EjemploBoundForAllFunction3.png, id=141, 1065.9825pt x 292.6935pt>
 File: Imagenes/EjemploBoundForAllFunction3.png Graphic file (type png)
 <use Imagenes/EjemploBoundForAllFunction3.png>
-Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction3.png  used on input line 268.
-(pdftex.def)             Requested size: 433.62pt x 132.61302pt.
+Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction3.png  used on input line 272.
+(pdftex.def)             Requested size: 433.62pt x 119.06274pt.
 
-Overfull \hbox (29.3747pt too wide) in paragraph at lines 268--269
+Overfull \hbox (29.3747pt too wide) in paragraph at lines 272--273
  [] 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 281--284
-
  []
 
 
 
 [7 <./Imagenes/EjemploBoundForAllFunction.png> <./Imagenes/EjemploBoundForAllFunction3.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 302--304
+Underfull \hbox (badness 10000) in paragraph at lines 294--296
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 312--315
+Underfull \hbox (badness 10000) in paragraph at lines 314--316
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 324--327
 
  []
 
 
 
 [8]
-Underfull \hbox (badness 10000) in paragraph at lines 336--339
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 340--343
+Underfull \hbox (badness 10000) in paragraph at lines 348--351
 
  []
 
 
 
 [9]
-Overfull \hbox (54.41504pt too wide) detected at line 373
+Underfull \hbox (badness 10000) in paragraph at lines 379--382
+
+ []
+
+
+Overfull \hbox (54.41504pt too wide) detected at line 396
 [] [] []
  []
 
 
-Overfull \hbox (65.85567pt too wide) detected at line 387
+Overfull \hbox (65.85567pt too wide) detected at line 410
 [] [] []
- []
-
-
-Overfull \hbox (60.8218pt too wide) detected at line 416
-[] [] [] 
  []
 
 
 
 [10]
-Underfull \hbox (badness 10000) in paragraph at lines 453--455
-
+Overfull \hbox (60.8218pt too wide) detected at line 439
+[] [] [] 
  []
 
 
 
 [11]
-Underfull \hbox (badness 10000) in paragraph at lines 456--460
+Underfull \hbox (badness 10000) in paragraph at lines 476--478
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 461--463
+Underfull \hbox (badness 10000) in paragraph at lines 479--483
 
  []
 
-LaTeX Font Info:    Trying to load font information for OMS+cmr on input line 468.
+
+Underfull \hbox (badness 10000) in paragraph at lines 484--486
+
+ []
+
+LaTeX Font Info:    Trying to load font information for OMS+cmr on input line 491.
 (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/base\omscmr.fd
 File: omscmr.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 468.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 491.
 
-Underfull \hbox (badness 10000) in paragraph at lines 473--479
+Underfull \hbox (badness 10000) in paragraph at lines 496--502
 
  []
 
@@ -977,20 +983,20 @@ LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-08-16>
  ***********
 Package rerunfilecheck Info: File `informe.out' has not changed.
-(rerunfilecheck)             Checksum: A4A0FB60CDE604FD7DB9F325C7C4A3E2;3172.
+(rerunfilecheck)             Checksum: 4C3B5DB87D56D70A12D1210804CF1104;3327.
  ) 
 Here is how much of TeX's memory you used:
- 37141 strings out of 473899
- 789692 string characters out of 5726028
+ 37241 strings out of 473899
+ 791554 string characters out of 5726028
  1949960 words of memory out of 5000000
- 59476 multiletter control sequences out of 15000+600000
+ 59567 multiletter control sequences out of 15000+600000
  572601 words of font info for 89 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  121i,8n,138p,1668b,2518s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\Ramiro\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1200.pk><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on informe.pdf (15 pages, 422725 bytes).
+Output written on informe.pdf (15 pages, 403482 bytes).
 PDF statistics:
- 247 PDF objects out of 1000 (max. 8388607)
- 42 named destinations out of 1000 (max. 500000)
- 192 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 257 PDF objects out of 1000 (max. 8388607)
+ 44 named destinations out of 1000 (max. 500000)
+ 200 words of extra memory for PDF output out of 10000 (max. 10000000)
 

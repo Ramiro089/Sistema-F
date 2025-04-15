@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex informe"] 1744040465.54157 "informe.aux" "informe.bbl" "informe" 1744315383.59358 0
-  "./lib.bib" 1741546831 775 f73df07953324a31068c4da1c2170849 ""
+["bibtex informe"] 1744714208.78579 "informe.aux" "informe.bbl" "informe" 1744714282.06177 0
+  "./lib.bib" 1744714208 963 90984806ffc392451ccdbde92e3ebc32 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/bibtex/bst/bibtex/unsrt.bst" 1291864736 18030 1376b4b231b50c66211e47e42eda2875 ""
-  "informe.aux" 1744315382 3400 35ad28e8b6a7a224e1f0b8e4a33e8fd5 "pdflatex"
+  "informe.aux" 1744714280 3607 5e4e6f16decdcbebef72209537ac5472 "pdflatex"
   (generated)
   "informe.bbl"
   "informe.blg"
   (rewritten before read)
-["pdflatex"] 1744315376.00086 "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" "informe.pdf" "informe" 1744315383.59493 0
-  "C:/Users/Ramiro/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1743853277 121421 986c656c18d5dae14116b93751df729f ""
+["pdflatex"] 1744714278.68068 "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" "informe.pdf" "informe" 1744714282.06273 0
+  "C:/Users/Ramiro/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1744477163 121421 986c656c18d5dae14116b93751df729f ""
   "C:/Users/Ramiro/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk" 1725994593 14064 1546adc216da8020c017a4a700ee9bf2 ""
   "C:/Users/Ramiro/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1725973176 24265805 ba274860b5af4f8fb0372ed395b15e4e ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/tcrm1200.tfm" 993062508 1444 95ffe0f19b974d50849790c8225c7ef7 ""
@@ -159,12 +159,14 @@
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/base/article.cls" 1719393830 20144 67a5f8e0f9e445e8ec6834e595cebdc9 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/base/atbegshi-ltx.sty" 1719393830 2963 e56732bbb93cfa019febfd0c7eaf1d21 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/base/atveryend-ltx.sty" 1719393830 2378 05fbb4f2b23b0e142f8cd3440c37e72e ""
+  "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/base/ifthen.sty" 1719393830 5525 3792dcd5bc92158cfaf00cc591e557cf ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/base/inputenc.sty" 1719393830 5048 7ebf0f2edf1ef6783e8fe2201a95d0e8 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/base/omscmr.fd" 1719393830 2469 74341109f164f230581718c66211c718 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/base/size12.clo" 1719393830 8449 30d84ec2eac77409e31fe51403c1ed64 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/blindtext/blindtext.sty" 1623002099 47295 de48b7f8ebf4b54709a2f6b2c7106dd5 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/bussproofs/bussproofs.sty" 1345467820 39833 dfb882c5505ae6cfb61e51a89a37de88 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/changepage/changepage.sty" 1256021817 4523 a9044e2dc40e764dac60d2acda7ae919 ""
+  "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/dirtytalk/dirtytalk.sty" 1678044549 1915 75d8498f106e3f673b6267693e944869 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/elocalloc/elocalloc.sty" 1482054697 1471 7d469063535b93044f827bfdb1b0a130 ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/enumitem/enumitem.sty" 1561039820 51697 f8f08183cd2080d9d18a41432d651dfb ""
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/environ/environ.sty" 1399192161 4378 f429f0da968c278653359293040a8f52 ""
@@ -220,12 +222,12 @@
   "C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1700127522 55487 80a65caedd3722f4c20a14a69e785d8f ""
   "Imagenes/EjemploBoundForAll.png" 1743109602 100878 33c9dae8def55932f9fab8bcb57ed6b7 ""
   "Imagenes/EjemploBoundForAllFunction.png" 1743334369 69651 55e13f8e47a3c3c5075b713a5a7a4d2b ""
-  "Imagenes/EjemploBoundForAllFunction3.png" 1743425638 153213 decfdbc5d21672187e4d05f8cb091c72 ""
-  "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" 1744315372 23071 aa439ac3daabe8c5d703bf967e06a22c ""
-  "informe.aux" 1744315382 3400 35ad28e8b6a7a224e1f0b8e4a33e8fd5 "pdflatex"
-  "informe.bbl" 1744040465 734 a5e57bb9c9a8d18bc13ce54afb325406 "bibtex informe"
-  "informe.out" 1744315382 3172 a4a0fb60cde604fd7db9f325c7c4a3e2 "pdflatex"
-  "informe.tex" 1744315372 23071 aa439ac3daabe8c5d703bf967e06a22c ""
+  "Imagenes/EjemploBoundForAllFunction3.png" 1744653022 136967 95c8bd5486c5fb1130a932fb63ea0f50 ""
+  "c:/Users/Ramiro/Desktop/TP Final/Informe/informe.tex" 1744714277 24539 b18e7d2c18ead90447acf913394a3448 ""
+  "informe.aux" 1744714280 3607 5e4e6f16decdcbebef72209537ac5472 "pdflatex"
+  "informe.bbl" 1744714209 892 7bec081fe2585fac52c0bd2cc965b660 "bibtex informe"
+  "informe.out" 1744714280 3327 4c3b5db87d56d70a12d1210804cf1104 "pdflatex"
+  "informe.tex" 1744714277 24539 b18e7d2c18ead90447acf913394a3448 ""
   (generated)
   "informe.aux"
   "informe.log"
