@@ -8,7 +8,7 @@ Los parsers definidos son:
 * term
 
 -}
-module Parse (parseStmt, term, ParseResult(..), P(..))
+module Parse ( ParseResult(..), P(..), parseStmt, term )
 where
 
 import Common
@@ -113,6 +113,7 @@ Type    : TYPEE                              { EmptyT }
         | ANY                                { VarT $1 }
 
 {
+-- | Representa el resultado de aplicar un parser
 data ParseResult a = Ok a | Failed String deriving Show         
 
 type P a = String -> ParseResult a

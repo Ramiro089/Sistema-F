@@ -58,7 +58,7 @@ conversionType' cuan cuanOG t@(ForAllT (Lt s _)) = toType (conversionType' (cuan
 conversionType' cuan cuanOG t                    = toType (conversionType' cuan cuanOG) t
 
 toType :: (Type -> Type) -> Type -> Type
-toType f (ForAllT (Lt s u)) = ForAllT (Ty (f u))
+toType f (ForAllT (Lt s t)) = ForAllT (Ty (f t))
 toType f (FunT t1 t2)       = FunT  (f t1) (f t2)
 toType f (ListT t)          = ListT (f t)
 toType f t                  = t
@@ -81,10 +81,10 @@ entonces se puede escribir algo de este tipo:
 /\X. \x:X. /\X. \y:X. t
 
 Que baja nuestra definición de Sistema F, los dos '/\X.' son distintos, entonces para dar el correcto BoundForAll tenemos que buscar 
-la ultima ocurrencia de 'X' en la lista de la lista cuantOG.
+la ultima ocurrencia de 'X' en la lista de la lista cuanOG.
 
-Este mismo problema puede ocurrir cuando se tiene que x tiene tipo (\/X. X -> \/X. X -> X), aca se hace lo mismo se cambia para que quede 
-(\/X. X -> \/ Y. Y -> Y), en este caso es la ultima ocurrencia de la lista cuan
+Este mismo problema puede ocurrir cuando se tiene que x tiene tipo (\/X. X -> \/X. X -> X), para solucionarlos se aplica la misma idea 
+que antes, se cambia para que quede (\/X. X -> \/ Y. Y -> Y), en este caso es la ultima ocurrencia de la lista cuan.
 -}
 
 ------------------------------------------
@@ -92,7 +92,7 @@ Este mismo problema puede ocurrir cuando se tiene que x tiene tipo (\/X. X -> \/
 sub :: Int -> Term -> Term -> Term
 sub i t (Bound j) | i == j    = t
                   | otherwise = Bound j
-sub _ _ (FreeGlobal n)        = FreeGlobal n
+sub i t (FreeGlobal n)        = FreeGlobal n
 sub i t (App u v)             = App (sub i t u) (sub i t v)
 sub i t (Lam t' u)            = Lam t' (sub (i + 1) t u)
 
@@ -126,7 +126,7 @@ sub i t (RecL u v w) = let u' = sub i t u
 
 -- Sustituye una variable de tipo por un tipo en concreto (la idea es hacer la regla E-TAppAbs)
 sus :: Term -> Type -> Term
-sus (Lam t u) typee       = Lam (susType t typee False) (sus u typee)
+sus (Lam t u)   typee     = Lam (susType t typee False) (sus u typee)
 sus (App t1 t2) typee     = App (sus t1 typee) (sus t2 typee)
 
 -- Sistema F
@@ -150,7 +150,8 @@ sus t _                = t
 ------------------------------------------
 {-
 Esta función se encarga de reemplazar los (BoundForAll Pos) por el tipo correspondiente.
-Se utiliza en la función sus y en la función infer. Pero hay una diferencia, en sus no se debe entrar al caso de BoundForAll (Inner _ ),
+La misma se utiliza en la función sus y en la función infer'. 
+Pero hay una diferencia, en sus no se debe entrar al caso de BoundForAll (Inner _ ),
 en infer si se debe. Para esto se utiliza un Bool, que indica el caso.
 -}
 susType :: Type -> Type -> Bool -> Type
@@ -162,9 +163,9 @@ susType (BoundForAll (External k)) typee _ = if k == 0 then typee else BoundForA
 susType (BoundForAll (Inner k)) typee True = if k == 0 then typee else BoundForAll $ Inner (k - 1)
 susType t _ _                              = t
 
--- | Convierte valor a un termino (de tipo Term) equivalente
+-- | Convierte un valor a un termino (de tipo Term) equivalente
 quote :: Value -> Term
-quote (VLam t f) = Lam t f
+quote (VLam t u) = Lam t u
 
 -- Sistema F
 quote (VForAll t) = ForAll t
@@ -181,7 +182,7 @@ quote (VNum (NSuc n)) = Suc $ quote $ VNum n
 quote (VList VNil)         = Nil
 quote (VList (VCons x xs)) = Cons (quote x) (quote (VList xs))
 
--- | Evalúa un termino (de tipo Term) en un entorno dado
+-- | Evalúa un termino (de tipo Term) en un entorno dado y devuelve su valor
 eval :: NameEnv Value Type -> Term -> Value
 eval nvs (FreeGlobal n) = fst $ fromJust (lookup n nvs)
 eval nvs (Lam t u)      = VLam t u
@@ -194,7 +195,7 @@ eval nvs (ForAll t)     = VForAll t
 eval nvs (TApp t typee) = let t' = eval nvs t
                           in case t' of
                                VForAll u -> eval nvs (sus u typee)
-                               _         -> error $ "El termino dentro de la aplicacion " ++ show t' ++ " no evalua a un VForAll"
+                               _         -> error $ "El termino dentro de la aplicación " ++ show t' ++ " no evalúa a un VForAll"
 
 -- Bool
 eval nvs T = VBool NTrue
@@ -202,7 +203,7 @@ eval nvs F = VBool NFalse
 eval nvs (IfThenElse t1 t2 t3) = case eval nvs t1 of
                                    VBool NTrue  -> eval nvs t2
                                    VBool NFalse -> eval nvs t3
-                                   val          -> error $ "El termino " ++ show val ++ " no evalua a un BoolVal"
+                                   val          -> error $ "El termino " ++ show val ++ " no evalúa a un BoolVal"
 
 -- Nat
 eval nvs Zero    = VNum NZero
@@ -212,7 +213,7 @@ eval nvs (Rec t1 t2 t3) = case eval nvs t3 of
                             VNum NZero    -> eval nvs t1
                             VNum (NSuc t) ->  let t' = quote $ VNum t
                                               in eval nvs $ App (App t2 (Rec t1 t2 t')) t'
-                            val           -> error $ "Se esperaba un NumVal pero se recibio " ++ show val
+                            val           -> error $ "Se esperaba un NumVal pero se recibió " ++ show val
 
 -- Lista
 eval nvs Nil         = VList VNil
@@ -224,13 +225,13 @@ eval nvs (RecL t1 t2 t3) = case eval nvs t3 of
                              VList (VCons n lv) -> let n'  = quote n
                                                        lv' = quote (VList lv)
                                                    in eval nvs $ App (App (App t2 n') lv') (RecL t1 t2 lv')
-                             val                -> error $ "Se esperaba un ListVal pero se recibio " ++ show val
+                             val                -> error $ "Se esperaba un ListVal pero se recibió " ++ show val
 
 -- Expresión incorrecta
 eval _ t = error $ "No se puede convertir el termino " ++ show t ++ " a un valor"
 
 ------------------------------------------
--- | Infiere el tipo de un término (de tipo Term)
+-- | Trata de inferir el tipo de un término (de tipo Term)
 infer :: NameEnv Value Type -> Term -> Either String Type
 infer = infer' []
 
@@ -269,29 +270,29 @@ match expected_type e@(Right t) | expected_type == t = e
 checkIsFun :: Either String Type -> Either String Type
 checkIsFun e@(Left _)  = e
 checkIsFun e@(Right t) = case t of
-                           FunT t1 t2 -> e
-                           _          -> notfunError t
+                           FunT _ _ -> e
+                           _        -> notfunError t
 
 -- Chequea que el tipo sea una función usada en la recursion de lista
 checkIsFunInRL :: Either String Type -> Either String Type
 checkIsFunInRL e@(Left _)  = e
 checkIsFunInRL e@(Right t) = case t of
                                FunT u (FunT (ListT u') (FunT (ListT v) (ListT v'))) ->
-                                          if u == u' && v == v' then e else err "El tipo de la funcion en RL no es correcto"
+                                          if u == u' && v == v' then e else err "El tipo de la función en RL no es correcto"
                                _ -> err "No es el tipo esperados para la operación RL"
 
 -- Dado un tupla y un tipo, se fija que la primer componente coincida con el tipo
 -- De hacerlo devuelve la segunda componente, sino devuelve un error.
 singleMatch :: (Type, Either String Type) -> Either String Type -> Either String Type
 singleMatch _ e@(Left _) = e
-singleMatch (expected_type, rst) e@(Right t) | t == expected_type = rst
-                                             | otherwise = matchError expected_type t
+singleMatch (expected_type, rst) (Right t) | t == expected_type = rst
+                                           | otherwise = matchError expected_type t
 
 ------------------------------------------
 
 infer' :: [Type] -> NameEnv Value Type -> Term -> Either String Type
-infer' c _ (Bound i)      = ret (c !! i)
-infer' _ e (FreeGlobal n) = maybe (notfoundError n) (ret . snd) (lookup n e)
+infer' c e (Bound i)      = ret (c !! i)
+infer' c e (FreeGlobal n) = maybe (notfoundError n) (ret . snd) (lookup n e)
 infer' c e (App t u)      = checkIsFun (infer' c e t) >>= \(FunT t1 t2) -> match t1 (infer' c e u) >> ret t2
 infer' c e (Lam t u)      = infer' (t : c) e u >>= \u' -> ret $ FunT t u'
 
@@ -327,4 +328,4 @@ infer' c e (RecL t1 t2 t3) =
       ListTEmpty -> checkIsFunInRL (infer' c e t2) >>= \(FunT t (FunT t' (FunT v v'))) -> match t' (ret t3') >> ret v
       _          -> case t3' of
                        ListT t -> singleMatch (FunT t (FunT t3' (FunT t1' t1')), ret t3') (infer' c e t2) >> ret t1'
-                       _       -> err $ "El tercer argumento de RL, " ++ show t3 ++ " no es un ListT"
+                       _       -> err $ "El tercer argumento de RL, " ++ show t3 ++ ", no es un ListT"

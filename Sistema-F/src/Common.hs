@@ -1,9 +1,9 @@
-{-# OPTIONS_GHC -Wno-missing-export-lists #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}   -- De este modulo importo todo
 -- | Define la forma que tendrán los valores, términos y tipos del Sistema F
-module Common 
+module Common
 where
 
--- | Comandos. Usado para evaluar o definir un expresión
+-- | Comandos, usados para evaluar o definir un expresión
 data Stmt i = Def String i | Eval i deriving (Show)
   
 instance Functor Stmt where
@@ -36,7 +36,7 @@ instance Eq Pos where
     External t1 == External t2 = t1 == t2
     Inner t1    == Inner t2    = t1 == t2
 
-{- | Forma de distinguir los para todos
+{- | Forma de distinguir los distintos para todos
 
 Fat viene de ForAllT, Lambd viene de Lambda, Lt viene de LamTerm, Ty viene de Type
 
@@ -53,7 +53,7 @@ instance Eq Fat where
     Lt _ t1  == Ty t2    = t1 == t2
 
     Lt s t1  == Lt s' t2 = t1 == t2 && s == s'
-    Ty t1    == Ty  t2   = t1 == t2
+    Ty t1    == Ty t2    = t1 == t2
     Lambd t1 == Lambd t2 = t1 == t2
 
 -- | Lambda términos con nombres
@@ -67,7 +67,7 @@ data LamTerm = LVar String
              | LTrue 
              | LFalse
              | LIfThenElse LamTerm LamTerm LamTerm
-             -- Nat 
+             -- Nat
              | LZero
              | LSuc LamTerm
              | LRec LamTerm LamTerm LamTerm

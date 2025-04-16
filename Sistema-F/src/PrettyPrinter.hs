@@ -133,19 +133,7 @@ printType :: Type -> Doc
 printType t = printTypeAux t 0 cuanInter cuanExter
   where cuanInter = map (++ "'") cuantificadores
         cuanExter = cuantificadores
-
-printTypeAuxForAll :: Type -> Int -> Int -> [String] -> [String] -> Doc
-printTypeAuxForAll (ForAllT (Ty t)) n k cuanInter cuanExter =
-  text "\\/ "
-    <> text (cuanInter !! k)
-    <> text ". "
-    <> printTypeAuxForAll t n (k+1) cuanInter cuanExter
-
-printTypeAuxForAll (FunT t1 t2) n k cuanInter cuanExter = 
-    sep [parensIf (isFun t1) (printTypeAuxForAll t1 n k cuanInter cuanExter), text "->", printTypeAuxForAll t2 n k cuanInter cuanExter] 
-printTypeAuxForAll (ListT t) n k cuanInter cuanExter = text "List " <> parensIf (inList t) (printTypeAuxForAll t n k cuanInter cuanExter)
-printTypeAuxForAll t n k  cuanInter cuanExter        = printTypeAux t n cuanInter cuanExter
-    
+   
 printTypeAux :: Type -> Int -> [String] -> [String] -> Doc
 -- Sistema F
 printTypeAux (ForAllT (Lambd t)) n cuanInter cuanExter =
@@ -170,6 +158,18 @@ printTypeAux (FunT t1 t2) n cuanInter cuanExter =
 -- List
 printTypeAux (ListT t) n cuanInter cuanExter  = text "List " <> parensIf (inList t) (printTypeAux t n cuanInter cuanExter)
 printTypeAux ListTEmpty _ cuanInter cuanExter = text "Lista Vacía"
+
+printTypeAuxForAll :: Type -> Int -> Int -> [String] -> [String] -> Doc
+printTypeAuxForAll (ForAllT (Ty t)) n k cuanInter cuanExter =
+  text "\\/ "
+    <> text (cuanInter !! k)
+    <> text ". "
+    <> printTypeAuxForAll t n (k+1) cuanInter cuanExter
+
+printTypeAuxForAll (FunT t1 t2) n k cuanInter cuanExter = 
+    sep [parensIf (isFun t1) (printTypeAuxForAll t1 n k cuanInter cuanExter), text "->", printTypeAuxForAll t2 n k cuanInter cuanExter] 
+printTypeAuxForAll (ListT t) n k cuanInter cuanExter = text "List " <> parensIf (inList t) (printTypeAuxForAll t n k cuanInter cuanExter)
+printTypeAuxForAll t n k  cuanInter cuanExter        = printTypeAux t n cuanInter cuanExter
 
 -------------------------------------------------
 

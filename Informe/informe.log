@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.9.10)  15 APR 2025 07:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.9.10)  16 APR 2025 12:24
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -837,19 +837,19 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has b
                    \relax 
 l.138 P
        ara entender como funciona el proyecto veamos la función de los arch... [1]
-Underfull \hbox (badness 10000) in paragraph at lines 143--145
+Underfull \hbox (badness 10000) in paragraph at lines 143--146
 
  []
 
 
 
 [2]
-Underfull \hbox (badness 10000) in paragraph at lines 154--156
+Underfull \hbox (badness 10000) in paragraph at lines 155--157
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 157--160
+Underfull \hbox (badness 10000) in paragraph at lines 158--161
 
  []
 
@@ -861,110 +861,115 @@ Underfull \hbox (badness 10000) in paragraph at lines 157--160
 <Imagenes/EjemploBoundForAll.png, id=128, 558.28575pt x 531.1845pt>
 File: Imagenes/EjemploBoundForAll.png Graphic file (type png)
 <use Imagenes/EjemploBoundForAll.png>
-Package pdftex.def Info: Imagenes/EjemploBoundForAll.png  used on input line 241.
+Package pdftex.def Info: Imagenes/EjemploBoundForAll.png  used on input line 242.
 (pdftex.def)             Requested size: 303.53267pt x 288.7968pt.
 
 
 [5]
-Underfull \hbox (badness 10000) in paragraph at lines 244--247
+Underfull \hbox (badness 10000) in paragraph at lines 245--248
 
  []
 
 <Imagenes/EjemploBoundForAllFunction.png, id=134, 558.888pt x 220.4235pt>
 File: Imagenes/EjemploBoundForAllFunction.png Graphic file (type png)
 <use Imagenes/EjemploBoundForAllFunction.png>
-Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction.png  used on input line 259.
+Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction.png  used on input line 260.
 (pdftex.def)             Requested size: 346.89731pt x 136.81586pt.
 
 
 [6 <./Imagenes/EjemploBoundForAll.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 262--264
+Underfull \hbox (badness 10000) in paragraph at lines 263--265
 
  []
 
 <Imagenes/EjemploBoundForAllFunction3.png, id=141, 1065.9825pt x 292.6935pt>
 File: Imagenes/EjemploBoundForAllFunction3.png Graphic file (type png)
 <use Imagenes/EjemploBoundForAllFunction3.png>
-Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction3.png  used on input line 272.
+Package pdftex.def Info: Imagenes/EjemploBoundForAllFunction3.png  used on input line 273.
 (pdftex.def)             Requested size: 433.62pt x 119.06274pt.
 
-Overfull \hbox (29.3747pt too wide) in paragraph at lines 272--273
+Overfull \hbox (29.3747pt too wide) in paragraph at lines 273--274
  [] 
  []
 
 
 
 [7 <./Imagenes/EjemploBoundForAllFunction.png> <./Imagenes/EjemploBoundForAllFunction3.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 294--296
+Underfull \hbox (badness 10000) in paragraph at lines 295--297
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 314--316
+Underfull \hbox (badness 10000) in paragraph at lines 315--317
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 324--327
+Underfull \hbox (badness 10000) in paragraph at lines 324--326
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 327--331
 
  []
 
 
 
 [8]
-Underfull \hbox (badness 10000) in paragraph at lines 348--351
+Underfull \hbox (badness 10000) in paragraph at lines 352--355
 
  []
 
 
 
 [9]
-Underfull \hbox (badness 10000) in paragraph at lines 379--382
+Underfull \hbox (badness 10000) in paragraph at lines 383--386
 
  []
 
 
-Overfull \hbox (54.41504pt too wide) detected at line 396
+Overfull \hbox (54.41504pt too wide) detected at line 400
 [] [] []
  []
 
 
-Overfull \hbox (65.85567pt too wide) detected at line 410
+Overfull \hbox (65.85567pt too wide) detected at line 414
 [] [] []
  []
 
 
 
 [10]
-Overfull \hbox (60.8218pt too wide) detected at line 439
+Overfull \hbox (60.8218pt too wide) detected at line 443
 [] [] [] 
  []
 
 
 
 [11]
-Underfull \hbox (badness 10000) in paragraph at lines 476--478
+Underfull \hbox (badness 10000) in paragraph at lines 480--482
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 479--483
+Underfull \hbox (badness 10000) in paragraph at lines 483--488
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 484--486
+Underfull \hbox (badness 10000) in paragraph at lines 489--491
 
  []
 
-LaTeX Font Info:    Trying to load font information for OMS+cmr on input line 491.
+LaTeX Font Info:    Trying to load font information for OMS+cmr on input line 496.
 (C:\Users\Ramiro\AppData\Local\Programs\MiKTeX\tex/latex/base\omscmr.fd
 File: omscmr.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 491.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 496.
 
-Underfull \hbox (badness 10000) in paragraph at lines 496--502
+Underfull \hbox (badness 10000) in paragraph at lines 501--507
 
  []
 
@@ -983,18 +988,18 @@ LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-08-16>
  ***********
 Package rerunfilecheck Info: File `informe.out' has not changed.
-(rerunfilecheck)             Checksum: 4C3B5DB87D56D70A12D1210804CF1104;3327.
+(rerunfilecheck)             Checksum: 67038A4AD0C75EBA0AC886B4B84F079B;3376.
  ) 
 Here is how much of TeX's memory you used:
- 37241 strings out of 473899
- 791554 string characters out of 5726028
- 1949960 words of memory out of 5000000
- 59567 multiletter control sequences out of 15000+600000
+ 37322 strings out of 473899
+ 793033 string characters out of 5726028
+ 1950960 words of memory out of 5000000
+ 59648 multiletter control sequences out of 15000+600000
  572601 words of font info for 89 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 121i,8n,138p,1668b,2518s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 121i,8n,138p,1668b,2586s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\Ramiro\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1200.pk><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:/Users/Ramiro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on informe.pdf (15 pages, 403482 bytes).
+Output written on informe.pdf (15 pages, 404148 bytes).
 PDF statistics:
  257 PDF objects out of 1000 (max. 8388607)
  44 named destinations out of 1000 (max. 500000)

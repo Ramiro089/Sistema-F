@@ -6,12 +6,12 @@ Ejemplos del informe
 (((((/\A. \a:A. \b:(\/B. B -> B) . b) <Nat>) 0) (/\X. \x:X. x)) <Bool>) T
 
 
-Mas ejemplos
+Mas ejemplos para probar
 (/\X. (\xs:List X. RL 0 (\x:X .\ys:List X. \r:Nat. suc r) xs)) <List Nat> (cons (cons 0 nil) nil) 
 
 (\x:Nat. \y:Nat. R x (\z:Nat. \a:Nat. suc z) y) (suc suc 0) (suc suc suc 0)
 
-(/\A. /\B. /\C. \f: B->C->A. f) <Nat> <Bool> <E>
+(/\A. /\B. /\C. \f: B->C->A. f) <Nat> <Bool> <E> (\a:Bool .\b:E. suc suc 0)
 
 (\x:(\/Y.\/X. Y -> X -> X). x) (/\X. /\Y. \x:X. \y:Y. y) <Nat> <Bool> 0 T
 
